@@ -33,8 +33,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: "https://seeya-website.vercel.app/logo-pink.png",
-        width: 500,
-        height: 500,
+        width: 1200,
+        height: 630,
         alt: "SeeYa - رحلات فاخرة للبنات",
       },
     ],
