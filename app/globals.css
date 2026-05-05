@@ -1,26 +1,122 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  --color-coral: #f95c6b;
+  --color-coral-soft: #ff8a96;
+  --color-coral-dark: #e0455a;
+  --color-pale: #fff0f1;
+  --color-ink: #1a0a0c;
+  --color-ink-soft: #2c1518;
+  --color-cream: #fff8f5;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --font-sans: var(--font-cairo), "Cairo", system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-playfair), Georgia, serif;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --shadow-coral: 0 20px 60px -15px rgba(249, 92, 107, 0.45);
+  --shadow-soft: 0 20px 50px -20px rgba(26, 10, 12, 0.18);
+
+  --animate-marquee: marquee 38s linear infinite;
+  --animate-ken-burns: ken-burns 22s ease-out infinite alternate;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-shimmer: shimmer 2.5s linear infinite;
+
+  @keyframes marquee {
+    0% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(50%);
+    }
+  }
+
+  @keyframes ken-burns {
+    0% {
+      transform: scale(1) translate(0, 0);
+    }
+    100% {
+      transform: scale(1.18) translate(-2%, -1%);
+    }
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-12px);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
   }
 }
 
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  background-color: white;
+}
+
+
+::selection {
+  background-color: var(--color-coral);
+  color: white;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-pale);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-coral);
+  border-radius: 999px;
+}
+
+/* RTL marquee — flip direction so it reads right→left naturally */
+.marquee-rtl {
+  animation: marquee 38s linear infinite;
+}
+
+/* Utility — gradient coral bg */
+.bg-coral-gradient {
+  background: linear-gradient(135deg, #f95c6b 0%, #ff8a96 50%, #ffb3bc 100%);
+}
+.bg-coral-gradient-deep {
+  background: linear-gradient(135deg, #e0455a 0%, #f95c6b 100%);
+}
+
+/* Text-shadow for hero copy on bright images */
+.text-shadow-soft {
+  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Hide scrollbar utility for marquee */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
 }
