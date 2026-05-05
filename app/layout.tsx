@@ -22,6 +22,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://seeya-website.vercel.app"),
   title: "SeeYa | رحلات فاخرة للبنات",
   description:
     "رحلات فاخرة مصممة للبنات فقط. مجموعات صغيرة، مرافقة عربية، وتجارب لا تُنسى. انضمي لـ SeeYa وسافري بكلاس.",
@@ -29,7 +30,14 @@ export const metadata: Metadata = {
   openGraph: {
     title: "SeeYa | رحلات فاخرة للبنات",
     description: "رحلات فاخرة مصممة للبنات فقط.",
-    images: ["/hero-women.jpg"],
+    images: [
+      {
+        url: "/hero-women.jpg",
+        width: 1200,
+        height: 630,
+        alt: "SeeYa - رحلات فاخرة للبنات",
+      },
+    ],
     locale: "ar_AR",
     type: "website",
   },
@@ -40,8 +48,9 @@ export const metadata: Metadata = {
     images: ["/hero-women.jpg"],
   },
   icons: {
-    icon: "/logo-pink.png",
+    icon: [{ url: "/logo-pink.png", sizes: "any" }],
     apple: "/logo-pink.png",
+    shortcut: "/logo-pink.png",
   },
 };
 
