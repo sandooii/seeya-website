@@ -48,9 +48,7 @@ export const metadata: Metadata = {
     images: ["/hero-women.jpg"],
   },
   icons: {
-    icon: [{ url: "/logo-pink.png", sizes: "any" }],
-    apple: "/logo-pink.png",
-    shortcut: "/logo-pink.png",
+    icon: "/favicon.ico",
   },
 };
 
