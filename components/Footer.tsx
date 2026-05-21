@@ -2,6 +2,7 @@
 
 import { Mail, Phone } from "lucide-react";
 import Logo from "./Logo";
+import { CONTACT, waLink } from "@/lib/contact";
 
 function Instagram({ size = 18 }: { size?: number }) {
   return (
@@ -28,11 +29,10 @@ const navLinks = [
   { label: "أسئلتكِ", href: "#faq" },
 ];
 
-const WHATSAPP_INTL = "9720544880123";
-const WHATSAPP_DISPLAY = "054-488-0123";
-const INSTAGRAM_HANDLE = "seeyaa.ar";
-const INSTAGRAM_URL = "https://instagram.com/seeyaa.ar";
-const EMAIL = "seeyaa.ar@gmail.com";
+const WHATSAPP_DISPLAY = CONTACT.whatsappDisplay;
+const INSTAGRAM_HANDLE = CONTACT.instagramHandle;
+const INSTAGRAM_URL = CONTACT.instagramUrl;
+const EMAIL = CONTACT.email;
 
 export default function Footer() {
   return (
@@ -78,7 +78,7 @@ export default function Footer() {
             <ul className="space-y-3 text-white/85">
               <li>
                 <a
-                  href={`https://wa.me/${WHATSAPP_INTL}`}
+                  href={waLink()}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2.5 hover:text-coral transition-colors"
@@ -119,7 +119,7 @@ export default function Footer() {
               </li>
               <li className="pt-1">
                 <a
-                  href={`https://wa.me/${WHATSAPP_INTL}`}
+                  href={waLink()}
                   target="_blank"
                   rel="noopener noreferrer"
                   dir="ltr"

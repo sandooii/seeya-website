@@ -12,6 +12,7 @@ import {
   Download,
 } from "lucide-react";
 import { formatPrice, type Trip } from "./data";
+import { waLink } from "@/lib/contact";
 
 const statusColor: Record<Trip["status"], string> = {
   live: "bg-emerald-500 text-white",
@@ -269,7 +270,7 @@ function ThailandBody({
       {/* G) BUTTONS */}
       <div className="flex flex-col gap-3 mt-8">
         <a
-          href="https://wa.me/9720544880123"
+          href={waLink(`بدي أحجز رحلة ${trip.name} 🌍`)}
           target="_blank"
           rel="noopener noreferrer"
           className="w-full flex items-center justify-center gap-3 py-4 rounded-full font-bold text-white text-base transition-all duration-300"
@@ -432,13 +433,24 @@ function DefaultBody({
             )}
           </div>
         )}
-        <motion.button
-          disabled={trip.status === "completed"}
-          className="inline-flex items-center gap-2 px-6 md:px-8 py-3.5 rounded-full bg-coral text-white font-bold shadow-coral hover:bg-coral-dark transition-colors disabled:bg-ink/30 disabled:shadow-none disabled:cursor-not-allowed"
-        >
-          {trip.status === "completed" ? "انتهت الرحلة" : "احجزي مكانكِ"}
-          {trip.status !== "completed" && <span>←</span>}
-        </motion.button>
+        {trip.status === "completed" ? (
+          <button
+            disabled
+            className="inline-flex items-center gap-2 px-6 md:px-8 py-3.5 rounded-full bg-ink/30 text-white font-bold cursor-not-allowed"
+          >
+            انتهت الرحلة
+          </button>
+        ) : (
+          <a
+            href={waLink(`بدي أحجز رحلة ${trip.name} 🌍`)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 md:px-8 py-3.5 rounded-full bg-coral text-white font-bold shadow-coral hover:bg-coral-dark transition-colors"
+          >
+            احجزي مكانكِ
+            <span>←</span>
+          </a>
+        )}
       </div>
     </>
   );

@@ -10,6 +10,8 @@ export type Trip = {
   /** "₪" for ILS, "$" for USD. Defaults to USD when omitted. */
   currency?: "₪" | "$";
   spots: number;
+  /** Original total spots before bookings — used to show "X of Y booked" widgets */
+  totalSpots?: number;
   status: TripStatus;
   badge: string;
   image: string;
@@ -47,6 +49,7 @@ export const trips: Trip[] = [
     deadline: "⏰ آخر موعد: 10.06.2026",
     pdf: "/thailand-program.pdf",
     spots: 7,
+    totalSpots: 10,
     status: "live",
     badge: "متاحة الآن",
     image:

@@ -1,11 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { waLink } from "@/lib/contact";
 
 export default function WhatsApp() {
   return (
     <motion.a
-      href="https://wa.me/9720544880123"
+      href={waLink()}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="تواصلي معنا على واتساب"

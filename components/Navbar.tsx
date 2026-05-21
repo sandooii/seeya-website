@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
+import { waLink } from "@/lib/contact";
 
 const links: { label: string; href: string; external?: boolean }[] = [
   { label: "رحلاتنا", href: "#trips" },
-  { label: "تواصلي معنا", href: "https://wa.me/9720544880123", external: true },
+  { label: "تواصلي معنا", href: waLink(), external: true },
   { label: "أسئلتكِ", href: "#faq" },
 ];
 

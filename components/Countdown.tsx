@@ -3,8 +3,18 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { Sparkles } from "lucide-react";
+import { trips } from "./data";
 
 const TARGET = new Date("2026-06-26T00:00:00").getTime();
+
+/**
+ * Pull seat counts from the single source of truth (data.ts) so the
+ * "X booked / Y remaining" widget always agrees with the trip card.
+ */
+const thailandTrip = trips.find((t) => t.id === "thailand");
+const TOTAL_SEATS = thailandTrip?.totalSpots ?? 10;
+const AVAILABLE = thailandTrip?.spots ?? 0;
+const BOOKED = Math.max(0, TOTAL_SEATS - AVAILABLE);
 
 type Tick = { d: number; h: number; m: number; s: number; gone: boolean };
 
@@ -33,10 +43,6 @@ const dots = [
   { size: 12, top: "82%", left: "32%", duration: 12, delay: 0.8 },
   { size: 5, top: "38%", left: "55%", duration: 7, delay: 1.6 },
 ];
-
-const TOTAL_SEATS = 10;
-const BOOKED = 3;
-const AVAILABLE = TOTAL_SEATS - BOOKED;
 
 function CountUp({ to }: { to: number }) {
   const ref = useRef<HTMLSpanElement | null>(null);

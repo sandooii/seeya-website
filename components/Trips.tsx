@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Calendar, Clock, MapPin, Users } from "lucide-react";
 import { trips, formatPrice, type Trip } from "./data";
 import TripModal from "./TripModal";
+import { waLink } from "@/lib/contact";
 
 const statusColor: Record<Trip["status"], string> = {
   live: "bg-emerald-500 text-white",
@@ -20,8 +21,7 @@ const pulse: Record<Trip["status"], boolean> = {
   completed: false,
 };
 
-const WAITLIST_HREF =
-  "https://wa.me/9720544880123?text=أريد الانضمام لقائمة الانتظار";
+const WAITLIST_HREF = waLink("أريد الانضمام لقائمة الانتظار");
 
 export default function Trips() {
   const [active, setActive] = useState<Trip | null>(null);
