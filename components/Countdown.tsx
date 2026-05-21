@@ -15,6 +15,7 @@ const thailandTrip = trips.find((t) => t.id === "thailand");
 const TOTAL_SEATS = thailandTrip?.totalSpots ?? 10;
 const AVAILABLE = thailandTrip?.spots ?? 0;
 const BOOKED = Math.max(0, TOTAL_SEATS - AVAILABLE);
+const IS_SOLD_OUT = thailandTrip?.status === "sold-out" || AVAILABLE === 0;
 
 type Tick = { d: number; h: number; m: number; s: number; gone: boolean };
 
@@ -124,28 +125,30 @@ function SeatsVisualizer() {
           ))}
         </div>
 
-        {/* Available bars (3) */}
-        <div className="flex gap-1.5" style={{ flexBasis: "30%" }}>
-          {Array.from({ length: AVAILABLE }).map((_, i) => (
-            <motion.div
-              key={`a-${i}`}
-              animate={{ opacity: [0.25, 0.7, 0.25] }}
-              transition={{
-                duration: 1.8,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: i * 0.4,
-              }}
-              className="flex-1"
-              style={{
-                height: "8px",
-                borderRadius: "4px",
-                border: "1px solid rgba(255,255,255,0.5)",
-                backgroundColor: "transparent",
-              }}
-            />
-          ))}
-        </div>
+        {/* Available bars (none when sold out) */}
+        {AVAILABLE > 0 && (
+          <div className="flex gap-1.5" style={{ flexBasis: "30%" }}>
+            {Array.from({ length: AVAILABLE }).map((_, i) => (
+              <motion.div
+                key={`a-${i}`}
+                animate={{ opacity: [0.25, 0.7, 0.25] }}
+                transition={{
+                  duration: 1.8,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: i * 0.4,
+                }}
+                className="flex-1"
+                style={{
+                  height: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid rgba(255,255,255,0.5)",
+                  backgroundColor: "transparent",
+                }}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Bottom rule */}
@@ -160,14 +163,20 @@ function SeatsVisualizer() {
         <span dir="rtl" className="text-sm font-bold">
           <CountUp to={BOOKED} /> مسافرات سجّلن
         </span>
-        <motion.span
-          dir="rtl"
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="text-sm font-medium text-white/80"
-        >
-          {AVAILABLE} باقي
-        </motion.span>
+        {IS_SOLD_OUT ? (
+          <span dir="rtl" className="text-sm font-bold text-white">
+            نفدت المقاعد 💔
+          </span>
+        ) : (
+          <motion.span
+            dir="rtl"
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className="text-sm font-medium text-white/80"
+          >
+            {AVAILABLE} باقي
+          </motion.span>
+        )}
       </div>
     </motion.div>
   );
@@ -293,7 +302,7 @@ export default function Countdown() {
           <span dir="ltr" lang="en" className="tabular-nums">
             26.06.2026 – 06.07.2026
           </span>{" "}
-          · باقي أماكن محدودة
+          · {IS_SOLD_OUT ? "نفدت المقاعد — قائمة الانتظار مفتوحة" : "باقي أماكن محدودة"}
         </motion.p>
 
         <div

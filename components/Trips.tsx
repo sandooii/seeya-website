@@ -12,6 +12,7 @@ const statusColor: Record<Trip["status"], string> = {
   open: "bg-coral text-white",
   soon: "bg-amber-400 text-ink",
   completed: "bg-ink/75 text-white",
+  "sold-out": "bg-ink text-white",
 };
 
 const pulse: Record<Trip["status"], boolean> = {
@@ -19,9 +20,12 @@ const pulse: Record<Trip["status"], boolean> = {
   open: false,
   soon: false,
   completed: false,
+  "sold-out": false,
 };
 
 const WAITLIST_HREF = waLink("أريد الانضمام لقائمة الانتظار");
+const SOLD_OUT_WAITLIST_HREF = (tripName: string) =>
+  waLink(`نفدت مقاعد رحلة ${tripName} — أريد الانضمام لقائمة الانتظار 🙏`);
 
 export default function Trips() {
   const [active, setActive] = useState<Trip | null>(null);
@@ -80,7 +84,10 @@ export default function Trips() {
 }
 
 function TripCard({ trip, onOpen }: { trip: Trip; onOpen: () => void }) {
-  const clickable = trip.status === "live" || trip.status === "open";
+  const clickable =
+    trip.status === "live" ||
+    trip.status === "open" ||
+    trip.status === "sold-out";
   const priceLabel = formatPrice(trip);
 
   const cardClasses = `group relative overflow-hidden rounded-3xl bg-ink text-white text-right min-h-[300px] flex flex-col ${
@@ -169,6 +176,25 @@ function TripCard({ trip, onOpen }: { trip: Trip; onOpen: () => void }) {
         </div>
       )}
 
+      {/* Status overlay — sold-out */}
+      {trip.status === "sold-out" && (
+        <div
+          className="absolute inset-0 z-20 grid place-items-center pointer-events-none"
+          aria-hidden
+        >
+          <div
+            className="absolute inset-0"
+            style={{ backgroundColor: "rgba(0,0,0,0.55)" }}
+          />
+          <span
+            className="relative text-white text-2xl md:text-3xl italic font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
+            style={{ fontFamily: "var(--font-playfair)" }}
+          >
+            Sold Out
+          </span>
+        </div>
+      )}
+
       {clickable && (
         <div className="absolute inset-0 bg-coral/0 group-hover:bg-coral/15 transition-colors duration-500" />
       )}
@@ -195,6 +221,7 @@ function TripCard({ trip, onOpen }: { trip: Trip; onOpen: () => void }) {
   );
 
   if (clickable) {
+    const isSoldOut = trip.status === "sold-out";
     return (
       <button
         type="button"
@@ -207,7 +234,7 @@ function TripCard({ trip, onOpen }: { trip: Trip; onOpen: () => void }) {
           {infoRow}
           <span className="inline-flex items-center gap-2 text-coral font-bold text-sm group-hover:gap-3 transition-all">
             <MapPin size={16} />
-            التفاصيل
+            {isSoldOut ? "قائمة الانتظار" : "التفاصيل"}
             <span className="transition-transform group-hover:-translate-x-1">
               ←
             </span>

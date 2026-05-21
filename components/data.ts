@@ -1,4 +1,4 @@
-export type TripStatus = "live" | "completed" | "soon" | "open";
+export type TripStatus = "live" | "completed" | "soon" | "open" | "sold-out";
 
 export type Trip = {
   id: string;
@@ -48,10 +48,10 @@ export const trips: Trip[] = [
     deposit: "دفعة أولى 5,000 ₪ فقط",
     deadline: "⏰ آخر موعد: 10.06.2026",
     pdf: "/thailand-program.pdf",
-    spots: 7,
+    spots: 0,
     totalSpots: 10,
-    status: "live",
-    badge: "متاحة الآن",
+    status: "sold-out",
+    badge: "نفدت المقاعد",
     image:
       "https://images.unsplash.com/photo-1537956965359-7573183d1f57?w=800&q=85",
     blurb:

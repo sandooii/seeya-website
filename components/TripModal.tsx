@@ -19,6 +19,7 @@ const statusColor: Record<Trip["status"], string> = {
   open: "bg-coral text-white",
   soon: "bg-amber-400 text-ink",
   completed: "bg-ink/70 text-white",
+  "sold-out": "bg-ink text-white",
 };
 
 const THAILAND_ACTIVITIES = [
@@ -269,22 +270,54 @@ function ThailandBody({
 
       {/* G) BUTTONS */}
       <div className="flex flex-col gap-3 mt-8">
-        <a
-          href={waLink(`بدي أحجز رحلة ${trip.name} 🌍`)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full flex items-center justify-center gap-3 py-4 rounded-full font-bold text-white text-base transition-all duration-300"
-          style={{ backgroundColor: "#F95C6B" }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#25D366";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "#F95C6B";
-          }}
-        >
-          <WhatsAppGlyph />
-          احجزي مكانكِ على واتساب
-        </a>
+        {trip.status === "sold-out" ? (
+          <>
+            <div
+              className="w-full text-center py-3 rounded-2xl text-sm font-bold"
+              style={{
+                backgroundColor: "rgba(26,10,12,0.06)",
+                color: "#1a0a0c",
+              }}
+            >
+              💔 نفدت المقاعد — انضمي لقائمة الانتظار وراح نخبرك أول لمّا يصير مكان
+            </div>
+            <a
+              href={waLink(
+                `نفدت مقاعد رحلة ${trip.name} — أريد الانضمام لقائمة الانتظار 🙏`,
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-center gap-3 py-4 rounded-full font-bold text-white text-base transition-all duration-300"
+              style={{ backgroundColor: "#F95C6B" }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#25D366";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#F95C6B";
+              }}
+            >
+              <WhatsAppGlyph />
+              انضمي لقائمة الانتظار
+            </a>
+          </>
+        ) : (
+          <a
+            href={waLink(`بدي أحجز رحلة ${trip.name} 🌍`)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex items-center justify-center gap-3 py-4 rounded-full font-bold text-white text-base transition-all duration-300"
+            style={{ backgroundColor: "#F95C6B" }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#25D366";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "#F95C6B";
+            }}
+          >
+            <WhatsAppGlyph />
+            احجزي مكانكِ على واتساب
+          </a>
+        )}
 
         {trip.pdf && (
           <a
@@ -440,6 +473,18 @@ function DefaultBody({
           >
             انتهت الرحلة
           </button>
+        ) : trip.status === "sold-out" ? (
+          <a
+            href={waLink(
+              `نفدت مقاعد رحلة ${trip.name} — أريد الانضمام لقائمة الانتظار 🙏`,
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 md:px-8 py-3.5 rounded-full bg-ink text-white font-bold hover:bg-ink/85 transition-colors"
+          >
+            انضمي لقائمة الانتظار
+            <span>←</span>
+          </a>
         ) : (
           <a
             href={waLink(`بدي أحجز رحلة ${trip.name} 🌍`)}
