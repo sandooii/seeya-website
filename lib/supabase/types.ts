@@ -77,7 +77,15 @@ export type TripRow = {
 
 export type BookingRow = {
   id: string;
-  client_id: string;
+  /**
+   * Nullable until OTP login launches. When NULL, the inline
+   * client_name/client_phone/client_email fields hold the contact info
+   * (manual WhatsApp bookings recorded by admin).
+   */
+  client_id: string | null;
+  client_name: string | null;
+  client_phone: string | null;
+  client_email: string | null;
   trip_id: string;
   status: BookingStatus;
   total_amount: number;
