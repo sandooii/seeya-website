@@ -15,6 +15,7 @@ const PUBLIC_AUTH_ROUTES = [
   "/admin/logout",     // POST endpoint
   "/login",
   "/signup",
+  "/account/logout",   // POST endpoint
   "/auth/callback",
 ];
 

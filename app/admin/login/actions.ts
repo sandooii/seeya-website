@@ -34,10 +34,22 @@ export async function signInWithPassword(
     return { error: error.message };
   }
 
-  // Verify the user is actually an admin before redirecting
+  // Verify the user is actually an admin before redirecting.
+  // IMPORTANT: filter by the authenticated user's id — admins can see all
+  // profiles via RLS, so `.single()` without a filter would return an
+  // arbitrary row once the system has more than one profile.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    await supabase.auth.signOut();
+    return { error: "تعذّر التحقق من الجلسة — حاولي مرة ثانية" };
+  }
+
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
+    .eq("id", user.id)
     .single();
 
   if (profile?.role !== "admin") {
