@@ -321,7 +321,7 @@ export default function BookingForm({
         <Field
           label="ملاحظات عامة"
           error={fieldError("notes")}
-          hint="ملاحظات بتظهر للعميلة لما يفتح OTP login (مثلاً: تفضيلات الغرفة)"
+          hint="ملاحظات بتظهر للعميلة بصفحة 'دليل الرحلة' (مثلاً: تفضيلات الغرفة)"
         >
           <textarea
             name="notes"

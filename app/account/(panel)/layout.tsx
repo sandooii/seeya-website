@@ -4,11 +4,13 @@ import { isInternalEmail } from "@/lib/auth-helpers";
 import AccountSidebar from "../AccountSidebar";
 
 /**
- * Sidebar shell — wraps the authenticated client area. The /account/welcome
- * wizard lives OUTSIDE this group and renders full-screen.
+ * Sidebar shell — wraps the authenticated client area.
  *
- * If the user hasn't completed her profile yet, route her to /welcome
- * here (after first OTP login) so she lands on the right place.
+ * Admin pre-creates every client account (via /admin/clients/new or by
+ * converting a booking), and that flow always populates full_name +
+ * phone. If we ever land here with an incomplete profile, it's a sign
+ * of manual DB tampering or a Supabase trigger race — bail out by
+ * signing the user out so they re-enter through the supported path.
  */
 export default async function AccountPanelLayout({
   children,
@@ -34,7 +36,11 @@ export default async function AccountPanelLayout({
   }
 
   if (!profile.full_name?.trim() || !profile.phone?.trim()) {
-    redirect("/account/welcome");
+    // Profile is missing required fields — admin needs to fix the
+    // record. Signing out is the safe move; the welcome wizard
+    // (legacy OTP-era) was removed in Phase 10.
+    await supabase.auth.signOut();
+    redirect("/login?next=/account&reason=incomplete_profile");
   }
 
   // Show real email if she has one; otherwise fall back to her phone.

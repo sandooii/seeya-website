@@ -52,59 +52,6 @@ export function formatPrice(trip: Trip): string | null {
 // (Trips, Countdown, TripModal) consume the same fields as before — the
 // DB→legacy adapter lives in `lib/trips.ts`.
 
-export const destinations = [
-  "تايلاند",
-  "بانسكو",
-  "زنجيبار",
-  "أمريكا",
-  "اليونان",
-  "المالديف",
-  "إسطنبول",
-  "طوكيو",
-  "لشبونة",
-  "ميكونوس",
-  "كابادوكيا",
-  "مراكش",
-];
-
-export const galleryImages = [
-  {
-    src: "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?auto=format&fit=crop&w=900&q=80",
-    alt: "بنات في رحلة على البحر",
-    span: "row-span-2",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?auto=format&fit=crop&w=900&q=80",
-    alt: "شارع باريسي",
-    span: "",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1504609813442-a8924e83f76e?auto=format&fit=crop&w=900&q=80",
-    alt: "حقول بالي",
-    span: "row-span-2",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1483683804023-6ccdb62f86ef?auto=format&fit=crop&w=900&q=80",
-    alt: "غروب الشاطئ",
-    span: "",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=900&q=80",
-    alt: "جبال الثلج",
-    span: "",
-  },
-];
-
-export const avatars = [
-  "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=200&q=80",
-  "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
-  "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=200&q=80",
-  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=200&q=80",
-  "https://images.unsplash.com/photo-1554151228-14d9def656e4?auto=format&fit=crop&w=200&q=80",
-  "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80",
-  "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=200&q=80",
-];
-
 export const faqs = [
   {
     q: "شو مشمول بسعر الرحلة؟",
