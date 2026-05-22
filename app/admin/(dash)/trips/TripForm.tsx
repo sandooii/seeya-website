@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import type { TripRow } from "@/lib/supabase/types";
 import PdfUpload from "@/components/admin/PdfUpload";
+import ItineraryEditor from "@/components/admin/ItineraryEditor";
 import { type TripFormState } from "./actions";
 
 type Action = (
@@ -336,31 +337,19 @@ export default function TripForm({
         </Field>
       </Section>
 
-      {/* ─── Itinerary (JSON) ─── */}
+      {/* ─── Itinerary — friendly day-by-day editor ─── */}
       <Section
         title="البرنامج التفصيلي"
-        hint="JSON: مصفوفة من كائنات فيها day و title و desc"
+        hint="أضيفي فقرة لكل يوم أو مجموعة أيام (مثلاً 'اليوم 1-2')"
       >
-        <Field label="" error={fieldError("itinerary")}>
-          <textarea
-            name="itinerary"
-            defaultValue={
-              trip?.itinerary
-                ? JSON.stringify(trip.itinerary, null, 2)
-                : ""
-            }
-            rows={12}
-            dir="ltr"
-            className={`${inputClass} font-mono text-xs text-left`}
-            placeholder={`[
-  {
-    "day": "اليوم 1-2",
-    "title": "بانكوك — البداية",
-    "desc": "وصول وجولة..."
-  }
-]`}
-          />
-        </Field>
+        <div className="md:col-span-2">
+          <ItineraryEditor initial={trip?.itinerary ?? []} />
+          {fieldError("itinerary") && (
+            <p className="text-xs text-red-600 font-semibold mt-2">
+              {fieldError("itinerary")}
+            </p>
+          )}
+        </div>
       </Section>
 
       {/* ─── Submit ─── */}

@@ -38,6 +38,7 @@ import {
 } from "@/lib/bookings";
 import { getTripPdfUrl } from "@/lib/pdfs";
 import { waLink } from "@/lib/contact";
+import LiveCountdown from "@/components/account/LiveCountdown";
 
 export const metadata = { title: "دليل رحلتي — SeeYa" };
 
@@ -119,7 +120,7 @@ export default async function MyTripDetailPage({
   return (
     <div className="space-y-8" dir="rtl">
       <Link
-        href="/account/trips"
+        href="/account"
         className="inline-flex items-center gap-1.5 text-sm text-ink/60 hover:text-coral transition-colors"
       >
         <ArrowRight size={14} />
@@ -161,15 +162,8 @@ export default async function MyTripDetailPage({
                 {trip.month} · {trip.duration}
               </p>
             </div>
-            {daysUntil !== null && daysUntil >= 0 && (
-              <div className="bg-white/15 backdrop-blur-lg border border-white/25 rounded-2xl px-5 py-3 text-center">
-                <div className="text-3xl md:text-4xl font-black tabular-nums leading-none">
-                  {daysUntil}
-                </div>
-                <div className="text-[10px] uppercase tracking-[0.2em] text-white/80 mt-1">
-                  يوم وبتسافري
-                </div>
-              </div>
+            {trip.start_date && daysUntil !== null && daysUntil >= 0 && (
+              <LiveCountdown startsAtIso={trip.start_date} />
             )}
           </div>
         </div>
