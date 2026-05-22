@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Calendar, Clock, MapPin, Users } from "lucide-react";
-import { trips, formatPrice, type Trip } from "./data";
+import { formatPrice, type Trip } from "./data";
 import TripModal from "./TripModal";
 import { waLink } from "@/lib/contact";
 
@@ -27,7 +27,7 @@ const WAITLIST_HREF = waLink("أريد الانضمام لقائمة الانت�
 const SOLD_OUT_WAITLIST_HREF = (tripName: string) =>
   waLink(`نفدت مقاعد رحلة ${tripName} — أريد الانضمام لقائمة الانتظار 🙏`);
 
-export default function Trips() {
+export default function Trips({ trips }: { trips: Trip[] }) {
   const [active, setActive] = useState<Trip | null>(null);
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export default function Trips() {
     window.addEventListener("openThailandModal", onOpenThailand);
     return () =>
       window.removeEventListener("openThailandModal", onOpenThailand);
-  }, []);
+  }, [trips]);
 
   return (
     <section id="trips" className="relative pt-20 md:pt-28 pb-0 bg-white">

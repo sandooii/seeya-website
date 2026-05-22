@@ -3,19 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { Sparkles } from "lucide-react";
-import { trips } from "./data";
+import type { Trip } from "./data";
 
 const TARGET = new Date("2026-06-26T00:00:00").getTime();
-
-/**
- * Pull seat counts from the single source of truth (data.ts) so the
- * "X booked / Y remaining" widget always agrees with the trip card.
- */
-const thailandTrip = trips.find((t) => t.id === "thailand");
-const TOTAL_SEATS = thailandTrip?.totalSpots ?? 10;
-const AVAILABLE = thailandTrip?.spots ?? 0;
-const BOOKED = Math.max(0, TOTAL_SEATS - AVAILABLE);
-const IS_SOLD_OUT = thailandTrip?.status === "sold-out" || AVAILABLE === 0;
 
 type Tick = { d: number; h: number; m: number; s: number; gone: boolean };
 
@@ -72,7 +62,15 @@ function CountUp({ to }: { to: number }) {
   );
 }
 
-function SeatsVisualizer() {
+function SeatsVisualizer({
+  booked,
+  available,
+  isSoldOut,
+}: {
+  booked: number;
+  available: number;
+  isSoldOut: boolean;
+}) {
   return (
     <motion.div
       initial={{ y: 20, opacity: 0 }}
@@ -98,9 +96,9 @@ function SeatsVisualizer() {
 
       {/* Bars row — booked on the visual left, available on the visual right */}
       <div className="flex items-center gap-4 py-4">
-        {/* Booked bars (7) */}
+        {/* Booked bars */}
         <div className="flex flex-1 gap-1.5">
-          {Array.from({ length: BOOKED }).map((_, i) => (
+          {Array.from({ length: booked }).map((_, i) => (
             <div
               key={`b-${i}`}
               className="flex-1 overflow-hidden"
@@ -126,9 +124,9 @@ function SeatsVisualizer() {
         </div>
 
         {/* Available bars (none when sold out) */}
-        {AVAILABLE > 0 && (
+        {available > 0 && (
           <div className="flex gap-1.5" style={{ flexBasis: "30%" }}>
-            {Array.from({ length: AVAILABLE }).map((_, i) => (
+            {Array.from({ length: available }).map((_, i) => (
               <motion.div
                 key={`a-${i}`}
                 animate={{ opacity: [0.25, 0.7, 0.25] }}
@@ -161,9 +159,9 @@ function SeatsVisualizer() {
       {/* Labels — booked label under the booked column, baqi under the available column */}
       <div className="flex items-center justify-between mt-3 text-white">
         <span dir="rtl" className="text-sm font-bold">
-          <CountUp to={BOOKED} /> مسافرات سجّلن
+          <CountUp to={booked} /> مسافرات سجّلن
         </span>
-        {IS_SOLD_OUT ? (
+        {isSoldOut ? (
           <span dir="rtl" className="text-sm font-bold text-white">
             نفدت المقاعد 💔
           </span>
@@ -174,7 +172,7 @@ function SeatsVisualizer() {
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             className="text-sm font-medium text-white/80"
           >
-            {AVAILABLE} باقي
+            {available} باقي
           </motion.span>
         )}
       </div>
@@ -224,8 +222,15 @@ function PalmTree() {
   );
 }
 
-export default function Countdown() {
+export default function Countdown({ trip }: { trip: Trip | null }) {
   const [t, setT] = useState<Tick>({ d: 0, h: 0, m: 0, s: 0, gone: false });
+
+  // Derive seat numbers from the DB-fetched trip. Falls back to safe
+  // defaults if (somehow) the Thailand trip row is missing.
+  const totalSeats = trip?.totalSpots ?? 10;
+  const available = trip?.spots ?? 0;
+  const booked = Math.max(0, totalSeats - available);
+  const isSoldOut = trip?.status === "sold-out" || available === 0;
 
   useEffect(() => {
     setT(diff());
@@ -302,7 +307,7 @@ export default function Countdown() {
           <span dir="ltr" lang="en" className="tabular-nums">
             26.06.2026 – 06.07.2026
           </span>{" "}
-          · {IS_SOLD_OUT ? "نفدت المقاعد — قائمة الانتظار مفتوحة" : "باقي أماكن محدودة"}
+          · {isSoldOut ? "نفدت المقاعد — قائمة الانتظار مفتوحة" : "باقي أماكن محدودة"}
         </motion.p>
 
         <div
@@ -332,7 +337,11 @@ export default function Countdown() {
           ))}
         </div>
 
-        <SeatsVisualizer />
+        <SeatsVisualizer
+          booked={booked}
+          available={available}
+          isSoldOut={isSoldOut}
+        />
 
         <motion.button
           type="button"
