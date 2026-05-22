@@ -29,7 +29,7 @@ export default async function EditBookingPage({ params }: { params: Params }) {
   const [tripsResult, clientsResult] = await Promise.all([
     supabase
       .from("trips")
-      .select("id, name, country, price, currency, status")
+      .select("id, name, country, price, currency, status, available_spots")
       .order("sort_order", { ascending: true }),
     supabase
       .from("profiles")

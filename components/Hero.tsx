@@ -204,13 +204,17 @@ function WomenHero() {
       id="top"
       className="relative h-[100vh] w-full overflow-hidden text-white"
     >
-      {/* Background video */}
+      {/* Background video — poster shows the women hero image while
+          the video downloads, so users on slow connections see a real
+          frame instead of a black box. */}
       <video
         src="/hero-video.mp4"
+        poster="/hero-women.jpg"
         autoPlay
         muted
         loop
         playsInline
+        preload="metadata"
         aria-hidden
         className="absolute inset-0 w-full h-full object-cover"
       />

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { formatPrice, type Trip } from "./data";
 import { waLink } from "@/lib/contact";
+import WaitlistFormModal from "./WaitlistFormModal";
 
 const statusColor: Record<Trip["status"], string> = {
   live: "bg-emerald-500 text-white",
@@ -347,24 +348,13 @@ function ThailandBody({
             >
               💔 نفدت المقاعد — انضمي لقائمة الانتظار وراح نخبرك أول لمّا يصير مكان
             </div>
-            <a
-              href={waLink(
-                `نفدت مقاعد رحلة ${trip.name} — أريد الانضمام لقائمة الانتظار 🙏`,
-              )}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full flex items-center justify-center gap-3 py-4 rounded-full font-bold text-white text-base transition-all duration-300"
-              style={{ backgroundColor: "#F95C6B" }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#25D366";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#F95C6B";
-              }}
-            >
-              <WhatsAppGlyph />
-              انضمي لقائمة الانتظار
-            </a>
+            <WaitlistFormModal
+              tripSlug={trip.id}
+              tripName={trip.name}
+              triggerLabel="انضمي لقائمة الانتظار"
+              triggerIcon={<span className="text-lg">🔔</span>}
+              triggerClassName="w-full flex items-center justify-center gap-3 py-4 rounded-full font-bold text-white text-base bg-coral hover:brightness-110 transition-all"
+            />
           </>
         ) : (
           <a

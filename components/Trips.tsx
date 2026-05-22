@@ -5,7 +5,8 @@ import { motion } from "framer-motion";
 import { Calendar, Clock, MapPin, Users } from "lucide-react";
 import { formatPrice, type Trip } from "./data";
 import TripModal from "./TripModal";
-import { CONTACT, waLink } from "@/lib/contact";
+import WaitlistFormModal from "./WaitlistFormModal";
+import { CONTACT } from "@/lib/contact";
 
 const statusColor: Record<Trip["status"], string> = {
   live: "bg-emerald-500 text-white",
@@ -22,10 +23,6 @@ const pulse: Record<Trip["status"], boolean> = {
   completed: false,
   "sold-out": false,
 };
-
-const WAITLIST_HREF = waLink("أريد الانضمام لقائمة الانتظار");
-const SOLD_OUT_WAITLIST_HREF = (tripName: string) =>
-  waLink(`نفدت مقاعد رحلة ${tripName} — أريد الانضمام لقائمة الانتظار 🙏`);
 
 export default function Trips({ trips }: { trips: Trip[] }) {
   const [active, setActive] = useState<Trip | null>(null);
@@ -251,15 +248,12 @@ function TripCard({ trip, onOpen }: { trip: Trip; onOpen: () => void }) {
       <div className="bg-white text-ink p-5 md:p-7 flex flex-col gap-4">
         {infoRow}
         {trip.status === "soon" && (
-          <a
-            href={WAITLIST_HREF}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex w-full items-center justify-center gap-2 px-5 py-2.5 rounded-full text-white text-sm font-bold transition-colors hover:brightness-110"
-            style={{ backgroundColor: "#F95C6B" }}
-          >
-            🔔 أبلغيني لما يفتح التسجيل
-          </a>
+          <WaitlistFormModal
+            tripSlug={trip.id}
+            tripName={trip.name}
+            triggerLabel="🔔 أبلغيني لما يفتح التسجيل"
+            triggerClassName="inline-flex w-full items-center justify-center gap-2 px-5 py-2.5 rounded-full text-white text-sm font-bold transition-colors hover:brightness-110 bg-coral"
+          />
         )}
         {trip.status === "completed" && (
           <a

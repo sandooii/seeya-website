@@ -44,7 +44,7 @@ export default async function AdminLayout({
       />
 
       <main className="flex-1 min-w-0 overflow-x-hidden">
-        <div className="max-w-7xl mx-auto px-6 md:px-10 py-8 md:py-12">
+        <div className="max-w-7xl mx-auto px-5 md:px-10 pt-20 md:pt-12 pb-8 md:pb-12">
           {children}
         </div>
       </main>

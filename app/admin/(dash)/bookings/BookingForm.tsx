@@ -21,7 +21,13 @@ const initialState: BookingFormState = {};
 
 type TripOption = Pick<
   TripRow,
-  "id" | "name" | "country" | "price" | "currency" | "status"
+  | "id"
+  | "name"
+  | "country"
+  | "price"
+  | "currency"
+  | "status"
+  | "available_spots"
 >;
 
 type ClientOption = Pick<Profile, "id" | "full_name" | "phone" | "email">;
@@ -185,7 +191,7 @@ export default function BookingForm({
 
       {/* ─── Trip ─── */}
       <Section title="الرحلة والحالة">
-        <Field label="الرحلة" error={fieldError("trip_id")} required>
+        <Field label="الرحلة" error={fieldError("trip_id")} required full>
           <select
             name="trip_id"
             value={tripId}
@@ -194,12 +200,27 @@ export default function BookingForm({
             className={inputClass}
           >
             <option value="">— اختاري الرحلة —</option>
-            {trips.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name} ({t.country})
-              </option>
-            ))}
+            {trips.map((t) => {
+              const isFull = t.available_spots === 0;
+              return (
+                <option key={t.id} value={t.id}>
+                  {t.name} ({t.country})
+                  {isFull
+                    ? " — نفدت المقاعد"
+                    : ` — ${t.available_spots} مقاعد`}
+                </option>
+              );
+            })}
           </select>
+          {selectedTrip && selectedTrip.available_spots === 0 && (
+            <div className="mt-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2.5 text-xs text-amber-900 flex items-start gap-2">
+              <span aria-hidden>⚠️</span>
+              <span>
+                <strong>تنبيه:</strong> هاي الرحلة مكتملة — صفر مقاعد متبقية.
+                بقدر تكملي الحجز بس راح يخصم المقاعد للسالب. تأكدي قبل تحفظي.
+              </span>
+            </div>
+          )}
         </Field>
 
         <Field

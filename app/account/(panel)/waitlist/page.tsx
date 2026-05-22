@@ -85,37 +85,78 @@ export default async function MyWaitlistPage() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {entries.map((e) => (
-          <article
-            key={e.id}
-            className="bg-white rounded-3xl border border-ink/5 p-5 flex items-center gap-4"
-          >
-            {e.trip && (
-              <div className="relative w-24 h-24 rounded-2xl overflow-hidden shrink-0">
-                <Image
-                  src={e.trip.image_url}
-                  alt={e.trip.name}
-                  fill
-                  sizes="96px"
-                  className="object-cover"
-                />
+        {entries.map((e) => {
+          const isOpen =
+            e.status === "waiting" || e.status === "offered";
+          return (
+            <article
+              key={e.id}
+              className="group bg-white rounded-3xl border border-ink/5 overflow-hidden flex flex-col"
+            >
+              {e.trip && (
+                <div className="relative h-32 w-full overflow-hidden">
+                  <Image
+                    src={e.trip.image_url}
+                    alt={e.trip.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 400px"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+                  <div className="absolute bottom-3 right-3 left-3 flex items-end justify-between gap-2 text-white">
+                    <div className="min-w-0">
+                      <div className="text-base md:text-lg font-black drop-shadow truncate">
+                        {e.trip.name}
+                      </div>
+                      <div
+                        className="text-[11px] text-white/80 mt-0.5 tabular-nums"
+                        dir="ltr"
+                      >
+                        {e.trip.country} · {e.trip.month}
+                      </div>
+                    </div>
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${waitlistStatusColor[e.status]}`}
+                    >
+                      {waitlistStatusLabel[e.status]}
+                    </span>
+                  </div>
+                </div>
+              )}
+              {!e.trip && (
+                <div className="px-5 pt-5">
+                  <div className="text-ink/55 text-sm font-bold">
+                    رحلة محذوفة
+                  </div>
+                </div>
+              )}
+
+              <div className="p-5">
+                {isOpen ? (
+                  <p className="text-sm text-ink/70 leading-relaxed">
+                    {e.status === "offered" ? (
+                      <>
+                        🌸 <strong>صار في مكان!</strong> راح نتواصل معك على
+                        الواتساب قريباً لتأكيد الحجز.
+                      </>
+                    ) : (
+                      <>
+                        🌸 سجّلناك بقائمة الانتظار — بنبلغك على واتساب أول لما
+                        يصير في مكان.
+                      </>
+                    )}
+                  </p>
+                ) : (
+                  <p className="text-sm text-ink/55">
+                    {e.status === "converted"
+                      ? "🎉 تم تحويلك لحجز فعلي — شوفي رحلاتك من 'رحلاتي'"
+                      : "هاي الإدخالة مش نشطة"}
+                  </p>
+                )}
               </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <div className="font-black text-ink text-lg">
-                {e.trip?.name ?? "رحلة محذوفة"}
-              </div>
-              <div className="text-xs text-ink/55 mt-0.5">
-                {e.trip?.month}
-              </div>
-              <span
-                className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border mt-2 ${waitlistStatusColor[e.status]}`}
-              >
-                {waitlistStatusLabel[e.status]}
-              </span>
-            </div>
-          </article>
-        ))}
+            </article>
+          );
+        })}
       </div>
     </div>
   );

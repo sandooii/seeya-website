@@ -50,7 +50,7 @@ export default async function AccountPanelLayout({
       />
 
       <main className="flex-1 min-w-0 overflow-x-hidden">
-        <div className="max-w-5xl mx-auto px-5 md:px-8 py-8 md:py-12">
+        <div className="max-w-5xl mx-auto px-5 md:px-8 pt-20 md:pt-12 pb-8 md:pb-12">
           {children}
         </div>
       </main>

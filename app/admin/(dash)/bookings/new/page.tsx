@@ -12,7 +12,7 @@ export default async function NewBookingPage() {
   const [tripsResult, clientsResult] = await Promise.all([
     supabase
       .from("trips")
-      .select("id, name, country, price, currency, status")
+      .select("id, name, country, price, currency, status, available_spots")
       .order("sort_order", { ascending: true }),
     supabase
       .from("profiles")
