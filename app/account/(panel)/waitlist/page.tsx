@@ -3,6 +3,7 @@ import Image from "next/image";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { TripRow, WaitlistRow } from "@/lib/supabase/types";
 import { waitlistStatusColor, waitlistStatusLabel } from "@/lib/waitlist";
+import { normalizePhone } from "@/lib/auth-helpers";
 
 export const metadata = { title: "قائمة انتظاري — SeeYa" };
 
@@ -26,8 +27,10 @@ export default async function MyWaitlistPage() {
     .eq("id", user.id)
     .single();
 
-  const phone = profile?.phone ?? "__no_phone__";
+  const myDigits = normalizePhone(profile?.phone ?? "");
 
+  // Fetch waitlist with trip joined, then filter client-side on
+  // normalized digits so "+972 50…" matches "0501…" etc.
   const { data, error } = await supabase
     .from("waitlist")
     .select(
@@ -36,7 +39,6 @@ export default async function MyWaitlistPage() {
       trip:trips(id, slug, name, country, image_url, month)
     `,
     )
-    .eq("phone", phone)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -47,7 +49,13 @@ export default async function MyWaitlistPage() {
     );
   }
 
-  const entries = (data ?? []) as WaitlistWithTrip[];
+  // Compare on the last 9 digits — robust to leading 0 / country code variance.
+  const tail = (s: string) => s.slice(-9);
+  const myTail = tail(myDigits);
+
+  const entries = ((data ?? []) as WaitlistWithTrip[]).filter(
+    (e) => myTail && tail(normalizePhone(e.phone)) === myTail,
+  );
 
   return (
     <div className="space-y-6" dir="rtl">

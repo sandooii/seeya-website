@@ -295,12 +295,38 @@ function CountdownCard({
           </p>
         </div>
         <div className="text-center md:text-left bg-white/15 backdrop-blur-lg border border-white/25 rounded-2xl px-6 py-4">
-          <div className="text-4xl md:text-5xl font-black tabular-nums leading-none">
-            {daysUntil}
-          </div>
-          <div className="text-xs uppercase tracking-[0.2em] text-white/80 mt-1">
-            {daysUntil === 1 ? "يوم وبتسافري" : "يوم وبتسافري"}
-          </div>
+          {daysUntil === 0 ? (
+            <>
+              <div className="text-3xl md:text-4xl font-black leading-none">
+                اليوم
+              </div>
+              <div className="text-xs uppercase tracking-[0.2em] text-white/80 mt-1">
+                🎉 سفرك اليوم
+              </div>
+            </>
+          ) : daysUntil === 1 ? (
+            <>
+              <div className="text-3xl md:text-4xl font-black leading-none">
+                غداً
+              </div>
+              <div className="text-xs uppercase tracking-[0.2em] text-white/80 mt-1">
+                بتسافري ✈️
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="text-4xl md:text-5xl font-black tabular-nums leading-none">
+                {daysUntil}
+              </div>
+              <div className="text-xs uppercase tracking-[0.2em] text-white/80 mt-1">
+                {daysUntil === 2
+                  ? "يومين وبتسافري"
+                  : daysUntil <= 10
+                    ? "أيام وبتسافري"
+                    : "يوم وبتسافري"}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -536,10 +562,16 @@ function computeReminders(bookings: BookingWithTrip[]): Reminder[] {
         (startDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
       );
       if (diff > 0 && diff <= 7) {
+        const whenLabel =
+          diff === 1
+            ? "بكرة"
+            : diff === 2
+              ? "بعد يومين"
+              : `بعد ${diff} أيام`;
         out.push({
           tone: "coral",
           icon: <Plane size={18} />,
-          title: `رحلة ${b.trip.name} بعد ${diff} ${diff === 1 ? "يوم" : "أيام"} ✨`,
+          title: `رحلة ${b.trip.name} ${whenLabel} ✨`,
           body: "وقت تحضّري الشنطة وتجهّزي للسفر!",
         });
       }

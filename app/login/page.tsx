@@ -46,7 +46,7 @@ export default async function LoginPage({
             أهلاً بعودتك ✨
           </h2>
           <p className="text-ink/60 text-sm text-right mb-7">
-            ادخلي بإيميلك وكلمة السر — كلمة السر هي رقم تلفونك
+            ادخلي برقم تلفونك (أو إيميلك إذا عندك) — كلمة السر هي رقم تلفونك
           </p>
 
           <LoginForm nextPath={next} />

@@ -14,6 +14,7 @@ import {
   remainingAmount,
   type BookingWithTrip,
 } from "@/lib/bookings";
+import { buildIlikeOrFilter } from "@/lib/search";
 import DeleteBookingButton from "./DeleteBookingButton";
 
 export const metadata = { title: "الحجوزات — Admin" };
@@ -63,12 +64,14 @@ export default async function BookingsAdminPage({
 
   if (tripFilter) query = query.eq("trip_id", tripFilter);
   if (statusFilter) query = query.eq("status", statusFilter);
-  if (q) {
-    // Match either inline client_name OR client_phone OR client_email
-    query = query.or(
-      `client_name.ilike.%${q}%,client_phone.ilike.%${q}%,client_email.ilike.%${q}%`,
-    );
-  }
+  // Match across inline client fields. Sanitized to drop reserved
+  // PostgREST chars (commas, parens) and LIKE wildcards.
+  const searchFilter = buildIlikeOrFilter(q, [
+    "client_name",
+    "client_phone",
+    "client_email",
+  ]);
+  if (searchFilter) query = query.or(searchFilter);
 
   const { data: bookings, error } = await query;
 

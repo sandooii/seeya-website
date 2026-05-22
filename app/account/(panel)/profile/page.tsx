@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { isInternalEmail } from "@/lib/auth-helpers";
 import ProfileForm from "./ProfileForm";
 
 export const metadata = { title: "بياناتي — SeeYa" };
@@ -16,6 +17,11 @@ export default async function ProfilePage() {
     .eq("id", user.id)
     .single();
 
+  // Only show the email if it's a real one. Synthetic
+  // <phone>@seeya.app addresses are an implementation detail.
+  const rawEmail = profile?.email ?? user.email ?? "";
+  const displayEmail = isInternalEmail(rawEmail) ? "" : rawEmail;
+
   return (
     <div className="space-y-6 max-w-2xl" dir="rtl">
       <header>
@@ -29,7 +35,7 @@ export default async function ProfilePage() {
         <ProfileForm
           defaultName={profile?.full_name ?? ""}
           defaultPhone={profile?.phone ?? ""}
-          email={profile?.email ?? user.email ?? ""}
+          email={displayEmail}
         />
       </div>
     </div>

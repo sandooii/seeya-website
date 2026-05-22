@@ -22,7 +22,11 @@ const statusColor: Record<Trip["status"], string> = {
   "sold-out": "bg-ink text-white",
 };
 
-const THAILAND_ACTIVITIES = [
+// Hardcoded fallback content for the Thailand modal — only used when
+// `trip.companion_content` is empty in Supabase. Once SANDO seeds the
+// companion editor at /admin/trips/[id]/companion, those values take
+// over and admin edits show up live.
+const THAILAND_ACTIVITIES_FALLBACK = [
   "🚢 إبحار في خليج جيمس بوند — يخت خاص",
   "🏝️ جزر في في و Maya Bay — يخت فاخر",
   "🌊 أنداماندا — مدينة الملاهي المائية",
@@ -30,17 +34,62 @@ const THAILAND_ACTIVITIES = [
   "✨ عرض فانتازيا — ليلة السحر",
 ];
 
-const THAILAND_ITINERARY_SUMMARY = [
+const THAILAND_HIGHLIGHTS_FALLBACK = [
   "5 فعاليات منظمة",
   "4 أيام حرة للراحة",
   "دعم ومرافقة 24/7",
 ];
 
-const THAILAND_FLIGHT_INFO = [
+const THAILAND_FLIGHT_FALLBACK = [
   "✈️ الإقلاع: تل أبيب 26.06 — الساعة 00:40",
   "✈️ الوصول: بوكيت 26.06 — الساعة 20:05",
   "🧳 الأمتعة: ترولي 8 كيلو + حقيبة 23 كيلو",
 ];
+
+/**
+ * Turn the (potentially partial) companion recommendations list into
+ * the flat strings the activity section renders. We accept either a
+ * string array (legacy seed) or the structured RecommendationItem[]
+ * shape from the admin editor.
+ */
+function companionActivities(trip: Trip): string[] {
+  const recs = trip.companion?.recommendations;
+  if (!recs || recs.length === 0) return [];
+  return recs.map((r) =>
+    r.description ? `${r.title} — ${r.description}` : r.title,
+  );
+}
+
+/**
+ * Format the structured FlightInfo into the existing
+ * emoji-prefixed bullet list. Returns an empty array when nothing
+ * was entered (and the caller should fall back to the seeded copy).
+ */
+function companionFlightLines(trip: Trip): string[] {
+  const f = trip.companion?.flight;
+  if (!f) return [];
+  const lines: string[] = [];
+  const depTime = [f.departure_date, f.departure_time]
+    .filter(Boolean)
+    .join(" — ");
+  if (f.departure_airport_name || depTime) {
+    lines.push(
+      `✈️ الإقلاع${f.departure_airport_name ? `: ${f.departure_airport_name}` : ""}${depTime ? ` ${depTime}` : ""}`.trim(),
+    );
+  }
+  if (f.arrival_airport_name) {
+    lines.push(`✈️ الوصول: ${f.arrival_airport_name}`);
+  }
+  if (f.airline || f.flight_number) {
+    lines.push(
+      `🛫 ${[f.airline, f.flight_number].filter(Boolean).join(" · ")}`,
+    );
+  }
+  if (f.notes) {
+    lines.push(`🧳 ${f.notes}`);
+  }
+  return lines;
+}
 
 type Props = {
   trip: Trip | null;
@@ -144,6 +193,23 @@ function ThailandBody({
   trip: Trip;
   priceLabel: string | null;
 }) {
+  // Prefer admin-edited companion_content; only fall back to the
+  // hardcoded seed if nothing has been entered yet.
+  const activitiesFromDb = companionActivities(trip);
+  const activities =
+    activitiesFromDb.length > 0
+      ? activitiesFromDb
+      : THAILAND_ACTIVITIES_FALLBACK;
+
+  const highlights =
+    trip.companion?.tips && trip.companion.tips.length > 0
+      ? trip.companion.tips
+      : THAILAND_HIGHLIGHTS_FALLBACK;
+
+  const flightFromDb = companionFlightLines(trip);
+  const flightLines =
+    flightFromDb.length > 0 ? flightFromDb : THAILAND_FLIGHT_FALLBACK;
+
   return (
     <div
       data-lenis-prevent="true"
@@ -220,7 +286,7 @@ function ThailandBody({
       {/* D) ACTIVITIES */}
       <Section title="الفعاليات المنظمة">
         <ol className="space-y-2.5 list-none">
-          {THAILAND_ACTIVITIES.map((act, i) => (
+          {activities.map((act, i) => (
             <li
               key={i}
               className="flex items-start gap-3 text-ink/85"
@@ -240,7 +306,7 @@ function ThailandBody({
       {/* E) ITINERARY SUMMARY */}
       <Section title="11 يوم مليانة حياة">
         <ul className="space-y-2.5">
-          {THAILAND_ITINERARY_SUMMARY.map((line, i) => (
+          {highlights.map((line, i) => (
             <li
               key={i}
               className="flex items-start gap-2.5 text-ink/85"
@@ -257,7 +323,7 @@ function ThailandBody({
       {/* F) FLIGHT INFO */}
       <Section title="تفاصيل الطيران">
         <ul className="space-y-2.5">
-          {THAILAND_FLIGHT_INFO.map((line, i) => (
+          {flightLines.map((line, i) => (
             <li
               key={i}
               className="text-sm leading-relaxed text-ink/85 bg-pale rounded-2xl px-4 py-2.5"
@@ -343,7 +409,7 @@ function ThailandBody({
           download="SeeYa-Cancellation-Policy.pdf"
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-full text-sm font-medium border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-full text-sm font-medium border border-ink/15 text-ink/60 hover:border-coral/40 hover:text-coral transition-colors"
         >
           سياسة الإلغاء PDF ↓
         </a>

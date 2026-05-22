@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Calendar, Clock, MapPin, Users } from "lucide-react";
 import { formatPrice, type Trip } from "./data";
 import TripModal from "./TripModal";
-import { waLink } from "@/lib/contact";
+import { CONTACT, waLink } from "@/lib/contact";
 
 const statusColor: Record<Trip["status"], string> = {
   live: "bg-emerald-500 text-white",
@@ -259,6 +259,16 @@ function TripCard({ trip, onOpen }: { trip: Trip; onOpen: () => void }) {
             style={{ backgroundColor: "#F95C6B" }}
           >
             🔔 أبلغيني لما يفتح التسجيل
+          </a>
+        )}
+        {trip.status === "completed" && (
+          <a
+            href={CONTACT.instagramUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex w-full items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-colors border border-ink/15 text-ink/70 hover:border-coral/40 hover:text-coral"
+          >
+            ✨ شوفي صور الرحلة على إنستغرام
           </a>
         )}
       </div>

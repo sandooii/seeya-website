@@ -1,3 +1,5 @@
+import type { TripCompanion } from "@/lib/supabase/types";
+
 export type TripStatus = "live" | "completed" | "soon" | "open" | "sold-out";
 
 export type Trip = {
@@ -26,6 +28,12 @@ export type Trip = {
   deadline?: string;
   /** PDF program URL — when set, modal renders a download button */
   pdf?: string;
+  /**
+   * Trip companion content — activities, flight info, tips, etc.
+   * Editable from /admin/trips/[id]/companion. Optional — sections
+   * fall back to hardcoded defaults in TripModal when missing.
+   */
+  companion?: TripCompanion;
 };
 
 /** Returns the formatted price string, or null when there's no price to show. */

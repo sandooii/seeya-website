@@ -191,35 +191,57 @@ export default async function AdminDashboardPage() {
       </section>
 
       <section className="rounded-3xl bg-white p-8 border border-ink/5">
-        <h2 className="text-2xl font-black text-ink mb-4">الخطوات التالية</h2>
+        <h2 className="text-2xl font-black text-ink mb-4">ما اللي خلص</h2>
         <ul className="space-y-3 text-ink/75">
           <li className="flex gap-3">
             <span className="text-coral font-bold">✓</span>
-            <span>تم إعداد قاعدة البيانات وربط Supabase</span>
+            <span>إعداد قاعدة البيانات وربط Supabase</span>
           </li>
           <li className="flex gap-3">
             <span className="text-coral font-bold">✓</span>
-            <span>تم إنشاء حسابك كأدمن</span>
+            <span>إدارة الرحلات + رفع PDF برنامج الرحلة</span>
           </li>
           <li className="flex gap-3">
             <span className="text-coral font-bold">✓</span>
-            <span>إضافة وتعديل الرحلات من اللوحة</span>
+            <span>إدارة الحجوزات والمدفوعات + خصم تلقائي للمقاعد</span>
           </li>
           <li className="flex gap-3">
             <span className="text-coral font-bold">✓</span>
-            <span>إدارة الحجوزات والمدفوعات</span>
+            <span>إدارة قائمة الانتظار + تحويل لحجز بنقرة</span>
           </li>
-          <li className="flex gap-3 text-ink/40">
-            <span>○</span>
-            <span>قريباً: رفع وإدارة الـ PDFs للرحلات</span>
+          <li className="flex gap-3">
+            <span className="text-coral font-bold">✓</span>
+            <span>
+              حسابات للعميلات + تسجيل دخول برقم التلفون (بدون OTP)
+            </span>
           </li>
-          <li className="flex gap-3 text-ink/40">
-            <span>○</span>
-            <span>قريباً: OTP login للعميلات</span>
+          <li className="flex gap-3">
+            <span className="text-coral font-bold">✓</span>
+            <span>
+              "دليل الرحلة" — معلومات الطيران، الفندق، التحذيرات، المطاعم،
+              نصائح
+            </span>
           </li>
-          <li className="flex gap-3 text-ink/40">
+          <li className="flex gap-3">
+            <span className="text-coral font-bold">✓</span>
+            <span>ربط حجز يدوي بحساب عميلة بزر واحد</span>
+          </li>
+        </ul>
+        <h2 className="text-2xl font-black text-ink mt-8 mb-4">
+          الخطوات الجاية
+        </h2>
+        <ul className="space-y-3 text-ink/75">
+          <li className="flex gap-3 text-ink/55">
             <span>○</span>
-            <span>قريباً: نظام التذكيرات الأوتوماتيكية</span>
+            <span>تذكيرات أوتوماتيكية (دفع، طيران، تجهيز السفر)</span>
+          </li>
+          <li className="flex gap-3 text-ink/55">
+            <span>○</span>
+            <span>فورم قائمة انتظار مباشر بالموقع</span>
+          </li>
+          <li className="flex gap-3 text-ink/55">
+            <span>○</span>
+            <span>تحسينات تجربة الموبايل (sidebar منزلق)</span>
           </li>
         </ul>
       </section>

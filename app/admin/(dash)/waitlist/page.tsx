@@ -9,6 +9,7 @@ import {
   waitlistStatusLabel,
   type WaitlistWithTrip,
 } from "@/lib/waitlist";
+import { buildIlikeOrFilter } from "@/lib/search";
 import DeleteWaitlistButton from "./DeleteWaitlistButton";
 import ConvertWaitlistButton from "./ConvertWaitlistButton";
 
@@ -57,11 +58,9 @@ export default async function WaitlistAdminPage({
 
   if (tripFilter) query = query.eq("trip_id", tripFilter);
   if (statusFilter) query = query.eq("status", statusFilter);
-  if (q) {
-    query = query.or(
-      `full_name.ilike.%${q}%,phone.ilike.%${q}%,email.ilike.%${q}%`,
-    );
-  }
+  // Sanitized to neutralize PostgREST/LIKE special chars
+  const searchFilter = buildIlikeOrFilter(q, ["full_name", "phone", "email"]);
+  if (searchFilter) query = query.or(searchFilter);
 
   const { data: list, error } = await query;
 

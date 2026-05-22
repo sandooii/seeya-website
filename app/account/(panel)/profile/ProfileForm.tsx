@@ -54,20 +54,26 @@ export default function ProfileForm({
         )}
       </div>
 
-      <div className="space-y-2">
-        <label className="block text-sm font-bold text-ink/40">
-          البريد الإلكتروني
-        </label>
-        <input
-          value={email}
-          readOnly
-          dir="ltr"
-          className="w-full rounded-xl border border-ink/10 bg-ink/3 px-4 py-3 text-ink/60 text-left cursor-not-allowed"
-        />
-        <p className="text-xs text-ink/40">
-          الإيميل هو طريقة تسجيل الدخول — ما بنقدر نعدّله من هون
-        </p>
-      </div>
+      {email ? (
+        <div className="space-y-2">
+          <label className="block text-sm font-bold text-ink/40">
+            البريد الإلكتروني
+          </label>
+          <input
+            value={email}
+            readOnly
+            dir="ltr"
+            className="w-full rounded-xl border border-ink/10 bg-ink/3 px-4 py-3 text-ink/60 text-left cursor-not-allowed"
+          />
+          <p className="text-xs text-ink/40">
+            ما بنقدر نعدّل الإيميل من هون — تواصلي معنا لو بدك تغيّريه
+          </p>
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-ink/10 bg-ink/3 px-4 py-3 text-sm text-ink/60">
+          ما عندك إيميل مسجّل — بتسجلي دخول برقم تلفونك
+        </div>
+      )}
 
       {state.error && (
         <div className="rounded-xl px-4 py-3 text-sm bg-red-50 text-red-700 border border-red-200">

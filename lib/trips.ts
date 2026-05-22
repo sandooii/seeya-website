@@ -39,6 +39,9 @@ export function dbTripToLegacy(row: TripRow): Trip {
     // Convert the storage key (e.g. "uuid.pdf") into a full public URL
     // so <TripModal>'s download button just consumes a fetchable href.
     pdf: getTripPdfUrl(row.pdf_path, row.updated_at) ?? undefined,
+    // Trip companion content (activities, flight, tips, etc.) drives
+    // the rich sections in TripModal so admin edits propagate live.
+    companion: row.companion_content ?? undefined,
   };
 }
 

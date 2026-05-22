@@ -13,18 +13,21 @@ type Flight = {
   statusColor: string;
 };
 
+// NOTE: The board is a marketing flourish, not a live data view —
+// values are hand-tuned for cinematic effect. When trip statuses change
+// in Supabase, update this list to match so the board doesn't lie.
 const flights: Flight[] = [
   {
     destination: "THAILAND",
     flight: "SY-001",
     date: "06.2026",
-    status: "BOARDING",
+    status: "SOLD OUT",
     statusColor: "#F95C6B",
   },
   {
     destination: "BANSKO",
     flight: "SY-002",
-    date: "01.2025",
+    date: "01.2026",
     status: "DEPARTED",
     statusColor: "#9aa1a8",
   },
@@ -146,7 +149,7 @@ function FlapText({
 /* ─── Hero ─────────────────────────────────────────────────────────────── */
 
 export default function Hero() {
-  // Board always starts at index 0 (Thailand · BOARDING)
+  // Board always starts at index 0 (Thailand · SOLD OUT)
   const [idx, setIdx] = useState(0);
 
   useEffect(() => {

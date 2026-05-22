@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { isInternalEmail } from "@/lib/auth-helpers";
 import AccountSidebar from "../AccountSidebar";
 
 /**
@@ -36,11 +37,16 @@ export default async function AccountPanelLayout({
     redirect("/account/welcome");
   }
 
+  // Show real email if she has one; otherwise fall back to her phone.
+  // We never expose the synthetic <phone>@seeya.app address.
+  const realEmail = isInternalEmail(profile.email) ? "" : (profile.email ?? "");
+  const contactLine = realEmail || profile.phone || "";
+
   return (
     <div className="min-h-screen flex bg-cream" dir="rtl">
       <AccountSidebar
         userName={profile.full_name ?? "بدون اسم"}
-        userEmail={profile.email ?? ""}
+        userEmail={contactLine}
       />
 
       <main className="flex-1 min-w-0 overflow-x-hidden">
