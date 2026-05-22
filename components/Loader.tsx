@@ -3,16 +3,25 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 const TAGLINE = "catch flights, not feelings.";
 const STORAGE_KEY = "seeya:loaded";
 
 export default function Loader() {
-  const [visible, setVisible] = useState(true);
+  const pathname = usePathname();
+  const skipOnRoute =
+    pathname?.startsWith("/admin") || pathname?.startsWith("/account");
+
+  const [visible, setVisible] = useState(!skipOnRoute);
   const [typed, setTyped] = useState(0);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (skipOnRoute) {
+      setVisible(false);
+      return;
+    }
 
     if (sessionStorage.getItem(STORAGE_KEY)) {
       setVisible(false);

@@ -4,15 +4,22 @@ import { useEffect } from "react";
 import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { usePathname } from "next/navigation";
 
 export default function SmoothScroll({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // Disable smooth scroll on dashboard-style routes — they need snappy native scroll
+    if (pathname?.startsWith("/admin") || pathname?.startsWith("/account")) {
+      return;
+    }
 
     gsap.registerPlugin(ScrollTrigger);
 
@@ -34,7 +41,7 @@ export default function SmoothScroll({
       lenis.off("scroll", onScroll);
       lenis.destroy();
     };
-  }, []);
+  }, [pathname]);
 
   return <>{children}</>;
 }

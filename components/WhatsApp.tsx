@@ -1,9 +1,17 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { usePathname } from "next/navigation";
 import { waLink } from "@/lib/contact";
 
 export default function WhatsApp() {
+  const pathname = usePathname();
+
+  // Hide on admin and authenticated-client routes
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/account")) {
+    return null;
+  }
+
   return (
     <motion.a
       href={waLink()}
