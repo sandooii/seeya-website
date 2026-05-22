@@ -90,7 +90,6 @@ function payloadFromForm(formData: FormData): {
     price_subtitle: string | null;
     deposit: string | null;
     deadline: string | null;
-    pdf_path: string | null;
     sort_order: number;
   };
   fieldErrors?: Record<string, string>;
@@ -181,7 +180,7 @@ function payloadFromForm(formData: FormData): {
         String(formData.get("price_subtitle") ?? "").trim() || null,
       deposit: String(formData.get("deposit") ?? "").trim() || null,
       deadline: String(formData.get("deadline") ?? "").trim() || null,
-      pdf_path: String(formData.get("pdf_path") ?? "").trim() || null,
+      // pdf_path is managed by PdfUpload via setTripPdfPath — not via this form
       sort_order: isNaN(sortOrder) ? 0 : sortOrder,
     },
   };
@@ -257,6 +256,31 @@ export async function deleteTrip(tripId: string): Promise<{ error?: string }> {
   }
 
   revalidatePath("/admin/trips");
+  revalidatePath("/");
+  return {};
+}
+
+/**
+ * Persist a PDF storage path onto a trip row (or clear it).
+ * Called by the PdfUpload component after a successful upload/delete
+ * so the change is reflected immediately without requiring a full
+ * form submit.
+ */
+export async function setTripPdfPath(
+  tripId: string,
+  path: string | null,
+): Promise<{ error?: string }> {
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase
+    .from("trips")
+    .update({ pdf_path: path })
+    .eq("id", tripId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/trips");
+  revalidatePath(`/admin/trips/${tripId}`);
+  revalidatePath("/admin/pdfs");
   revalidatePath("/");
   return {};
 }

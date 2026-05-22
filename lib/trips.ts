@@ -14,6 +14,7 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { TripRow } from "@/lib/supabase/types";
 import type { Trip } from "@/components/data";
+import { getTripPdfUrl } from "@/lib/pdfs";
 
 export function dbTripToLegacy(row: TripRow): Trip {
   return {
@@ -35,7 +36,9 @@ export function dbTripToLegacy(row: TripRow): Trip {
     priceSubtitle: row.price_subtitle ?? undefined,
     deposit: row.deposit ?? undefined,
     deadline: row.deadline ?? undefined,
-    pdf: row.pdf_path ?? undefined,
+    // Convert the storage key (e.g. "uuid.pdf") into a full public URL
+    // so <TripModal>'s download button just consumes a fetchable href.
+    pdf: getTripPdfUrl(row.pdf_path, row.updated_at) ?? undefined,
   };
 }
 

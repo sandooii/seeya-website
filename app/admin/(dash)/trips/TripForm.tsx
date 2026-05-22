@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import type { TripRow } from "@/lib/supabase/types";
+import PdfUpload from "@/components/admin/PdfUpload";
 import { type TripFormState } from "./actions";
 
 type Action = (
@@ -302,19 +303,21 @@ export default function TripForm({
             placeholder="وصف مختصر للرحلة يظهر تحت العنوان..."
           />
         </Field>
+      </Section>
 
-        <Field
-          label="رابط ملف الـ PDF"
-          error={fieldError("pdf_path")}
-          hint="(اختياري) — مثال: /thailand-program.pdf"
-        >
-          <input
-            name="pdf_path"
-            defaultValue={trip?.pdf_path ?? ""}
-            dir="ltr"
-            className={`${inputClass} text-left`}
+      {/* ─── PDF program ─── */}
+      <Section
+        title="برنامج الرحلة (PDF)"
+        hint="بيظهر للعميلات على صفحة الرحلة كزر تحميل"
+      >
+        <div className="md:col-span-2">
+          <PdfUpload
+            tripId={trip?.id ?? null}
+            tripName={trip?.name}
+            currentPath={trip?.pdf_path ?? null}
+            updatedAt={trip?.updated_at}
           />
-        </Field>
+        </div>
       </Section>
 
       {/* ─── Includes ─── */}

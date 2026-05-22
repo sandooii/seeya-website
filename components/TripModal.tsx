@@ -322,7 +322,7 @@ function ThailandBody({
         {trip.pdf && (
           <a
             href={trip.pdf}
-            download="SeeYa-Thailand-2026.pdf"
+            download={`SeeYa-${trip.id}.pdf`}
             target="_blank"
             rel="noopener noreferrer"
             className="w-full inline-flex items-center justify-center gap-2 rounded-full py-3 font-bold border bg-transparent transition-colors hover:bg-coral hover:text-white"
