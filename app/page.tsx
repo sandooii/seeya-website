@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar";
+import NavAccountSlot from "@/components/NavAccountSlot";
 import Hero from "@/components/Hero";
 import Trips from "@/components/Trips";
 import Countdown from "@/components/Countdown";
@@ -15,7 +16,10 @@ export default async function Home() {
 
   return (
     <>
-      <Navbar />
+      <Navbar
+        accountSlotLight={<NavAccountSlot dark={false} />}
+        accountSlotDark={<NavAccountSlot dark={true} />}
+      />
       <main className="flex-1">
         <Hero />
         <Countdown trip={thailand} />

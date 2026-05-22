@@ -11,7 +11,15 @@ const links: { label: string; href: string; external?: boolean }[] = [
   { label: "أسئلتكِ", href: "#faq" },
 ];
 
-export default function Navbar() {
+export default function Navbar({
+  accountSlotLight,
+  accountSlotDark,
+}: {
+  /** Account chip shown when Navbar is transparent (over hero). */
+  accountSlotLight?: React.ReactNode;
+  /** Account chip shown when Navbar is on a white background (scrolled). */
+  accountSlotDark?: React.ReactNode;
+} = {}) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -75,6 +83,22 @@ export default function Navbar() {
           ))}
         </ul>
 
+        {/* ACCOUNT SLOT — desktop, absolute on physical right
+            (matches "visual right" in both LTR and RTL since the
+            right edge is the right edge regardless of direction). */}
+        <div className="hidden md:flex items-center absolute right-5 md:right-10 top-1/2 -translate-y-1/2 z-20">
+          {accountSlotLight && (
+            <span className={scrolled ? "hidden" : "block"}>
+              {accountSlotLight}
+            </span>
+          )}
+          {accountSlotDark && (
+            <span className={scrolled ? "block" : "hidden"}>
+              {accountSlotDark}
+            </span>
+          )}
+        </div>
+
         {/* MOBILE BUTTON — far right */}
         <div className="md:hidden ml-auto">
           <button
@@ -113,6 +137,14 @@ export default function Navbar() {
                   </a>
                 </li>
               ))}
+              {accountSlotDark && (
+                <li
+                  className="pt-3 border-t border-ink/10"
+                  onClick={() => setOpen(false)}
+                >
+                  {accountSlotDark}
+                </li>
+              )}
             </ul>
           </motion.div>
         )}
