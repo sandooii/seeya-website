@@ -12,7 +12,7 @@ import {
   Download,
 } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { BookingRow, TripRow, WaitlistRow } from "@/lib/supabase/types";
+import type { BookingRow, TripRow } from "@/lib/supabase/types";
 import {
   bookingStatusColor,
   bookingStatusLabel,
@@ -20,14 +20,11 @@ import {
   paymentProgress,
   remainingAmount,
 } from "@/lib/bookings";
-import {
-  waitlistStatusColor,
-  waitlistStatusLabel,
-} from "@/lib/waitlist";
 import { getTripPdfUrl } from "@/lib/pdfs";
 import { waLink, CONTACT } from "@/lib/contact";
+import LiveCountdown from "@/components/account/LiveCountdown";
 
-export const metadata = { title: "حسابي — SeeYa" };
+export const metadata = { title: "رحلاتي — SeeYa" };
 
 type BookingWithTrip = BookingRow & {
   trip: Pick<
@@ -43,10 +40,6 @@ type BookingWithTrip = BookingRow & {
     | "pdf_path"
     | "updated_at"
   > | null;
-};
-
-type WaitlistWithTrip = WaitlistRow & {
-  trip: Pick<TripRow, "id" | "slug" | "name" | "country" | "image_url" | "month"> | null;
 };
 
 type SearchParams = Promise<{ linked?: string }>;
@@ -73,32 +66,18 @@ export default async function AccountHomePage({
 
   const firstName = (profile?.full_name ?? "").split(" ")[0] || "صديقتي";
 
-  // Fetch bookings + waitlist in parallel
-  const [bookingsResult, waitlistResult] = await Promise.all([
-    supabase
-      .from("bookings")
-      .select(
-        `
+  const { data: bookingsData } = await supabase
+    .from("bookings")
+    .select(
+      `
         *,
         trip:trips(id, slug, name, country, image_url, month, duration, start_date, pdf_path, updated_at)
       `,
-      )
-      .eq("client_id", user.id)
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("waitlist")
-      .select(
-        `
-        *,
-        trip:trips(id, slug, name, country, image_url, month)
-      `,
-      )
-      .eq("phone", profile?.phone ?? "__no_phone__")
-      .order("created_at", { ascending: false }),
-  ]);
+    )
+    .eq("client_id", user.id)
+    .order("created_at", { ascending: false });
 
-  const bookings = (bookingsResult.data ?? []) as BookingWithTrip[];
-  const waitlist = (waitlistResult.data ?? []) as WaitlistWithTrip[];
+  const bookings = (bookingsData ?? []) as BookingWithTrip[];
 
   // Find the soonest upcoming trip (with start_date in the future)
   const today = new Date();
@@ -116,13 +95,6 @@ export default async function AccountHomePage({
       return da - db;
     })[0];
 
-  const daysUntilUpcoming = upcoming?.trip?.start_date
-    ? Math.ceil(
-        (new Date(upcoming.trip.start_date).getTime() - today.getTime()) /
-          (1000 * 60 * 60 * 24),
-      )
-    : null;
-
   // Compute reminder banners
   const reminders = computeReminders(bookings);
 
@@ -130,14 +102,11 @@ export default async function AccountHomePage({
 
   return (
     <div className="space-y-8" dir="rtl">
-      {/* ─── Hero greeting + countdown ─── */}
+      {/* ─── Hero greeting + live countdown ─── */}
       <header className="space-y-2">
-        <h1 className="text-4xl md:text-5xl font-black text-ink">
+        <h1 className="text-3xl md:text-4xl font-black text-ink">
           أهلاً يا {firstName} ✨
         </h1>
-        <p className="text-ink/60 text-lg">
-          هاي صفحتك — كل رحلاتك وملفاتك بمكان واحد
-        </p>
       </header>
 
       {linkedCount > 0 && (
@@ -163,10 +132,10 @@ export default async function AccountHomePage({
         </div>
       )}
 
-      {/* ─── Countdown to next trip ─── */}
-      {upcoming && upcoming.trip && daysUntilUpcoming !== null && (
+      {/* ─── Live countdown card for the next trip ─── */}
+      {upcoming && upcoming.trip && upcoming.trip.start_date && (
         <CountdownCard
-          daysUntil={daysUntilUpcoming}
+          startsAtIso={upcoming.trip.start_date}
           tripName={upcoming.trip.name}
           tripImage={upcoming.trip.image_url}
           tripMonth={upcoming.trip.month}
@@ -174,18 +143,10 @@ export default async function AccountHomePage({
         />
       )}
 
-      {/* ─── Bookings ─── */}
+      {/* ─── Bookings — full list (this is now the landing page) ─── */}
       <section>
-        <header className="flex items-baseline justify-between gap-4 mb-4">
+        <header className="mb-4">
           <h2 className="text-2xl font-black text-ink">رحلاتي</h2>
-          {bookings.length > 0 && (
-            <Link
-              href="/account/trips"
-              className="text-sm font-bold text-coral hover:underline"
-            >
-              عرض الكل ←
-            </Link>
-          )}
         </header>
 
         {bookings.length === 0 ? (
@@ -197,32 +158,12 @@ export default async function AccountHomePage({
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {bookings.slice(0, 4).map((b) => (
+            {bookings.map((b) => (
               <BookingCard key={b.id} booking={b} />
             ))}
           </div>
         )}
       </section>
-
-      {/* ─── Waitlist ─── */}
-      {waitlist.length > 0 && (
-        <section>
-          <header className="flex items-baseline justify-between gap-4 mb-4">
-            <h2 className="text-2xl font-black text-ink">قائمة انتظاري</h2>
-            <Link
-              href="/account/waitlist"
-              className="text-sm font-bold text-coral hover:underline"
-            >
-              عرض الكل ←
-            </Link>
-          </header>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {waitlist.slice(0, 2).map((w) => (
-              <WaitlistCard key={w.id} entry={w} />
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* ─── Floating WhatsApp button ─── */}
       <a
@@ -255,13 +196,13 @@ export default async function AccountHomePage({
 // ─── Components ───
 
 function CountdownCard({
-  daysUntil,
+  startsAtIso,
   tripName,
   tripImage,
   tripMonth,
   tripDuration,
 }: {
-  daysUntil: number;
+  startsAtIso: string;
   tripName: string;
   tripImage: string;
   tripMonth: string;
@@ -278,7 +219,7 @@ function CountdownCard({
         priority
       />
       <div className="absolute inset-0 bg-gradient-to-l from-black/70 via-black/40 to-black/60" />
-      <div className="relative p-6 md:p-10 flex flex-col md:flex-row items-end md:items-center justify-between gap-4">
+      <div className="relative p-6 md:p-10 flex flex-col md:flex-row items-end md:items-center justify-between gap-5">
         <div>
           <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs font-bold mb-3 border border-white/30">
             <Sparkles size={12} />
@@ -294,40 +235,7 @@ function CountdownCard({
             {tripMonth} · {tripDuration}
           </p>
         </div>
-        <div className="text-center md:text-left bg-white/15 backdrop-blur-lg border border-white/25 rounded-2xl px-6 py-4">
-          {daysUntil === 0 ? (
-            <>
-              <div className="text-3xl md:text-4xl font-black leading-none">
-                اليوم
-              </div>
-              <div className="text-xs uppercase tracking-[0.2em] text-white/80 mt-1">
-                🎉 سفرك اليوم
-              </div>
-            </>
-          ) : daysUntil === 1 ? (
-            <>
-              <div className="text-3xl md:text-4xl font-black leading-none">
-                غداً
-              </div>
-              <div className="text-xs uppercase tracking-[0.2em] text-white/80 mt-1">
-                بتسافري ✈️
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="text-4xl md:text-5xl font-black tabular-nums leading-none">
-                {daysUntil}
-              </div>
-              <div className="text-xs uppercase tracking-[0.2em] text-white/80 mt-1">
-                {daysUntil === 2
-                  ? "يومين وبتسافري"
-                  : daysUntil <= 10
-                    ? "أيام وبتسافري"
-                    : "يوم وبتسافري"}
-              </div>
-            </>
-          )}
-        </div>
+        <LiveCountdown startsAtIso={startsAtIso} />
       </div>
     </div>
   );
@@ -465,37 +373,6 @@ function BookingCard({ booking }: { booking: BookingWithTrip }) {
             </a>
           )}
         </div>
-      </div>
-    </article>
-  );
-}
-
-function WaitlistCard({ entry }: { entry: WaitlistWithTrip }) {
-  return (
-    <article className="bg-white rounded-3xl border border-ink/5 p-5 flex items-center gap-4">
-      {entry.trip && (
-        <div className="relative w-20 h-20 rounded-2xl overflow-hidden shrink-0">
-          <Image
-            src={entry.trip.image_url}
-            alt={entry.trip.name}
-            fill
-            sizes="80px"
-            className="object-cover"
-          />
-        </div>
-      )}
-      <div className="flex-1 min-w-0">
-        <div className="font-black text-ink">
-          {entry.trip?.name ?? "رحلة محذوفة"}
-        </div>
-        <div className="text-xs text-ink/55 mt-0.5">
-          {entry.trip?.month}
-        </div>
-        <span
-          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border mt-1.5 ${waitlistStatusColor[entry.status]}`}
-        >
-          {waitlistStatusLabel[entry.status]}
-        </span>
       </div>
     </article>
   );

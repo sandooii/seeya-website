@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Home,
   Plane,
   Clock,
   User,
@@ -20,9 +19,9 @@ type NavItem = {
   icon: React.ComponentType<{ size?: number }>;
 };
 
+// Trips is the landing page (no separate "home" tab) — Phase 11.1.
 const NAV: NavItem[] = [
-  { href: "/account", label: "الرئيسية", icon: Home },
-  { href: "/account/trips", label: "رحلاتي", icon: Plane },
+  { href: "/account", label: "رحلاتي", icon: Plane },
   { href: "/account/waitlist", label: "قائمة انتظاري", icon: Clock },
   { href: "/account/profile", label: "بياناتي", icon: User },
 ];
@@ -128,9 +127,12 @@ export default function AccountSidebar({
 
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {NAV.map((item) => {
+            // "رحلاتي" lights up on /account and any /account/trips/* page
+            // (the companion detail page). Other items match by prefix.
             const active =
               item.href === "/account"
-                ? pathname === "/account"
+                ? pathname === "/account" ||
+                  pathname.startsWith("/account/trips")
                 : pathname.startsWith(item.href);
             const Icon = item.icon;
             return (
