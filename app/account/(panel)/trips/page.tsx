@@ -159,8 +159,14 @@ export default async function MyTripsPage() {
                   )}
                 </div>
 
-                {pdfUrl && (
-                  <div className="mt-1">
+                <div className="flex items-center gap-2 flex-wrap mt-1">
+                  <Link
+                    href={`/account/trips/${b.id}`}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-coral text-white text-xs font-bold hover:brightness-110 transition-colors"
+                  >
+                    دليل الرحلة ←
+                  </Link>
+                  {pdfUrl && (
                     <a
                       href={pdfUrl}
                       target="_blank"
@@ -168,10 +174,10 @@ export default async function MyTripsPage() {
                       className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-coral/8 text-coral text-xs font-bold hover:bg-coral/15 transition-colors"
                     >
                       <Download size={13} />
-                      تنزيل برنامج الرحلة PDF
+                      تنزيل PDF
                     </a>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </article>
           );

@@ -5,6 +5,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { BookingRow } from "@/lib/supabase/types";
 import { bookingClientName } from "@/lib/bookings";
 import BookingForm from "../BookingForm";
+import ConvertToClientButton from "../ConvertToClientButton";
 import { updateBooking } from "../actions";
 
 export const metadata = { title: "تعديل حجز — Admin" };
@@ -25,10 +26,17 @@ export default async function EditBookingPage({ params }: { params: Params }) {
     notFound();
   }
 
-  const { data: trips } = await supabase
-    .from("trips")
-    .select("id, name, country, price, currency, status")
-    .order("sort_order", { ascending: true });
+  const [tripsResult, clientsResult] = await Promise.all([
+    supabase
+      .from("trips")
+      .select("id, name, country, price, currency, status")
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("profiles")
+      .select("id, full_name, phone, email")
+      .eq("role", "client")
+      .order("full_name", { ascending: true }),
+  ]);
 
   const updateAction = updateBooking.bind(null, booking.id);
 
@@ -48,17 +56,29 @@ export default async function EditBookingPage({ params }: { params: Params }) {
           <ArrowRight size={14} />
           <span>العودة للحجوزات</span>
         </Link>
-        <h1 className="text-4xl md:text-5xl font-black text-ink">
-          تعديل: {displayName}
-        </h1>
-        <p className="text-ink/60 mt-2" dir="ltr">
-          #{booking.id.slice(0, 8)}
-        </p>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-black text-ink">
+              تعديل: {displayName}
+            </h1>
+            <p className="text-ink/60 mt-2" dir="ltr">
+              #{booking.id.slice(0, 8)}
+            </p>
+          </div>
+          <ConvertToClientButton
+            bookingId={booking.id}
+            clientName={displayName}
+            clientEmail={booking.client_email}
+            clientPhone={booking.client_phone}
+            hasAccount={!!booking.client_id}
+          />
+        </div>
       </header>
 
       <BookingForm
         booking={booking}
-        trips={trips ?? []}
+        trips={tripsResult.data ?? []}
+        clients={clientsResult.data ?? []}
         action={updateAction}
         submitLabel="حفظ التعديلات"
       />

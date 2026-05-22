@@ -6,6 +6,11 @@ import {
   createServerSupabaseClient,
   createServiceRoleClient,
 } from "@/lib/supabase/server";
+import {
+  normalizePhone,
+  resolveAuthEmail,
+  isInternalEmail,
+} from "@/lib/auth-helpers";
 
 export type ClientFormState = {
   error?: string;
@@ -14,17 +19,14 @@ export type ClientFormState = {
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
-function normalizePhone(phone: string): string {
-  return phone.replace(/\D/g, "");
-}
-
 /**
  * Create an auth user for a client + populate her profile row.
- * Called from /admin/clients/new and (optionally) the booking form.
+ * Called from /admin/clients/new.
  *
- * The auth row is created with `email_confirm: true` so the client
- * doesn't have to verify her email separately — she can immediately
- * sign in at /login with an OTP code.
+ * **Email is OPTIONAL** — if admin doesn't provide one, we use
+ * `<phone-digits>@seeya.app` so Supabase has a unique key. The
+ * client never sees that internal email; she logs in with her
+ * phone number as username + her phone number as password.
  */
 export async function inviteClient(
   _prev: ClientFormState,
@@ -32,11 +34,10 @@ export async function inviteClient(
 ): Promise<ClientFormState> {
   const fieldErrors: Record<string, string> = {};
 
-  const email = String(formData.get("email") ?? "")
-    .trim()
-    .toLowerCase();
-  if (!email) fieldErrors.email = "البريد الإلكتروني مطلوب";
-  else if (!EMAIL_RE.test(email)) fieldErrors.email = "صيغة البريد غير صالحة";
+  const rawEmail = String(formData.get("email") ?? "").trim().toLowerCase();
+  // Email is now optional — only validate format if provided.
+  if (rawEmail && !EMAIL_RE.test(rawEmail))
+    fieldErrors.email = "صيغة البريد غير صالحة";
 
   const full_name = String(formData.get("full_name") ?? "").trim();
   if (!full_name) fieldErrors.full_name = "الاسم مطلوب";
@@ -50,10 +51,21 @@ export async function inviteClient(
 
   const admin = createServiceRoleClient();
 
-  // 1) Create the auth user (silent — no invite email)
+  // Password = phone number digits only — easy for client to remember
+  // and easy for admin to communicate via WhatsApp.
+  const password = normalizePhone(phone);
+
+  // Resolve the email Supabase will store on auth.users
+  const authEmail = resolveAuthEmail(rawEmail, phone);
+  if (!authEmail) {
+    return { error: "تعذّر تكوين بيانات الحساب — تأكدي من الرقم" };
+  }
+
+  // 1) Create the auth user with the password (silent — no invite email)
   const { data: created, error: createError } =
     await admin.auth.admin.createUser({
-      email,
+      email: authEmail,
+      password,
       email_confirm: true,
       user_metadata: { full_name },
     });
@@ -65,17 +77,31 @@ export async function inviteClient(
       msg.includes("already exists") ||
       msg.includes("duplicate")
     ) {
-      return { fieldErrors: { email: "هذا الإيميل مسجل مسبقاً" } };
+      return {
+        fieldErrors: {
+          [rawEmail ? "email" : "phone"]: rawEmail
+            ? "هذا الإيميل مسجل مسبقاً"
+            : "في حساب مسجل بنفس رقم التلفون — استخدمي رقم تاني",
+        },
+      };
     }
     return { error: createError?.message ?? "تعذّر إنشاء الحساب" };
   }
 
   const userId = created.user.id;
 
-  // 2) Populate the profile (the handle_new_user trigger created the row)
+  // 2) Populate the profile. profile.email stores only REAL emails —
+  //    we don't surface the synthetic <phone>@seeya.app value to admin
+  //    or to the client.
+  const profileEmail = rawEmail || null;
   const { error: profileError } = await admin
     .from("profiles")
-    .update({ full_name, phone, role: "client" })
+    .update({
+      full_name,
+      phone,
+      email: profileEmail,
+      role: "client",
+    })
     .eq("id", userId);
 
   if (profileError) {
@@ -136,9 +162,63 @@ export async function updateClient(
 
   if (error) return { error: error.message };
 
+  // Keep the auth password + synthetic email in sync with the new phone.
+  // If the client's profile.email is a real address we leave the auth
+  // email alone; if she has no real email, the auth email is the
+  // synthetic <phone>@seeya.app and needs to track phone changes.
+  const password = normalizePhone(phone);
+  if (password.length >= 7) {
+    const admin = createServiceRoleClient();
+
+    const { data: authUser } = await admin.auth.admin.getUserById(clientId);
+    const currentAuthEmail = authUser?.user?.email ?? null;
+
+    const updates: { password: string; email?: string } = { password };
+    if (isInternalEmail(currentAuthEmail)) {
+      updates.email = resolveAuthEmail(null, phone) ?? undefined;
+    }
+
+    await admin.auth.admin.updateUserById(clientId, updates);
+  }
+
   revalidatePath("/admin/clients");
   revalidatePath(`/admin/clients/${clientId}`);
   redirect("/admin/clients");
+}
+
+/**
+ * Reset a client's password to her current phone number. Useful when
+ * the client forgets, or after an admin manually changes her phone
+ * elsewhere. Doesn't change anything else.
+ */
+export async function resetClientPasswordToPhone(
+  clientId: string,
+): Promise<{ error?: string; password?: string }> {
+  const supabase = await createServerSupabaseClient();
+  const { data: profile, error: readError } = await supabase
+    .from("profiles")
+    .select("phone")
+    .eq("id", clientId)
+    .single();
+
+  if (readError || !profile?.phone) {
+    return { error: "ما لقينا رقم العميلة — أضيفي رقم أولاً" };
+  }
+
+  const password = normalizePhone(profile.phone);
+  if (password.length < 7) {
+    return { error: "رقم التلفون قصير — صحّحيه أولاً" };
+  }
+
+  const admin = createServiceRoleClient();
+  const { error } = await admin.auth.admin.updateUserById(clientId, {
+    password,
+  });
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/admin/clients/${clientId}`);
+  return { password };
 }
 
 export async function deleteClient(

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import ClientForm from "../ClientForm";
+import ResetPasswordButton from "../ResetPasswordButton";
 import { updateClient } from "../actions";
 
 export const metadata = { title: "تعديل عميلة — Admin" };
@@ -51,6 +52,19 @@ export default async function EditClientPage({ params }: { params: Params }) {
           action={updateAction}
           submitLabel="حفظ التعديلات"
           editableEmail={false}
+        />
+      </div>
+
+      <div className="bg-white rounded-3xl border border-ink/5 p-6">
+        <h2 className="text-lg font-black text-ink mb-1">كلمة السر</h2>
+        <p className="text-ink/55 text-sm mb-4">
+          كلمة سر العميلة = رقم تلفونها (أرقام فقط). إذا نستيها أو
+          غيّرتي رقمها يدوياً من قاعدة البيانات، اضغطي الزر تحت
+          لتوحيدها مع الرقم الحالي.
+        </p>
+        <ResetPasswordButton
+          clientId={client.id}
+          phone={client.phone}
         />
       </div>
     </div>

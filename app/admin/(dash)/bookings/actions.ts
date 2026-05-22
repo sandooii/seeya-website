@@ -2,9 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  createServerSupabaseClient,
+  createServiceRoleClient,
+} from "@/lib/supabase/server";
 import { bookingCountsAsTaken } from "@/lib/bookings";
+import { normalizePhone, resolveAuthEmail } from "@/lib/auth-helpers";
 import type { BookingStatus, CurrencyCode } from "@/lib/supabase/types";
+
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 export type BookingFormState = {
   error?: string;
@@ -61,6 +67,8 @@ function payloadFromForm(formData: FormData): {
     String(formData.get("client_phone") ?? "").trim() || null;
   const client_email =
     String(formData.get("client_email") ?? "").trim() || null;
+  const client_id_raw = String(formData.get("client_id") ?? "").trim();
+  const client_id = client_id_raw || null;
 
   if (!client_name) fieldErrors.client_name = "اسم العميلة مطلوب";
   if (!client_phone) fieldErrors.client_phone = "رقم الواتساب مطلوب";
@@ -86,7 +94,10 @@ function payloadFromForm(formData: FormData): {
     payload: {
       trip_id,
       status,
-      client_id: null, // until OTP launches
+      // Optional FK to profiles.id — set when admin links this booking
+      // to a registered client. Falls back to inline name/phone fields
+      // for manual WhatsApp bookings with no client account yet.
+      client_id,
       client_name,
       client_phone,
       client_email,
@@ -206,6 +217,145 @@ export async function updateBooking(
   revalidatePath("/admin");
   revalidatePath("/");
   redirect("/admin/bookings");
+}
+
+export type ConvertBookingResult = {
+  ok?: boolean;
+  error?: string;
+  /** What the client should type into /login's "username" field —
+   *  her real email if she has one, otherwise her phone digits. */
+  loginUsername?: string;
+  /** Password to share with the client (= phone digits). */
+  password?: string;
+  /** Number of additional orphan bookings linked by phone match. */
+  linkedExtra?: number;
+};
+
+/**
+ * Promote an inline-only booking into a real client account.
+ *
+ * - Creates the auth user with password = phone digits
+ * - Creates the profile (trigger does this, we just update full_name + phone)
+ * - Links this booking + any other orphan bookings with the same phone
+ *
+ * No-ops if the booking is already linked. Returns the email/password
+ * combo so the admin can WhatsApp them to the client.
+ */
+export async function convertBookingToClient(
+  bookingId: string,
+): Promise<ConvertBookingResult> {
+  const supabase = await createServerSupabaseClient();
+  const admin = createServiceRoleClient();
+
+  const { data: booking, error: readError } = await supabase
+    .from("bookings")
+    .select("id, client_id, client_name, client_phone, client_email")
+    .eq("id", bookingId)
+    .single();
+
+  if (readError || !booking) {
+    return { error: readError?.message ?? "ما لقينا الحجز" };
+  }
+
+  if (booking.client_id) {
+    return { error: "هاي العميلة عندها حساب مربوط بهذا الحجز مسبقاً" };
+  }
+
+  const rawEmail = (booking.client_email ?? "").trim().toLowerCase();
+  const phone = (booking.client_phone ?? "").trim();
+  const fullName = (booking.client_name ?? "").trim();
+
+  if (rawEmail && !EMAIL_RE.test(rawEmail)) {
+    return { error: "صيغة الإيميل غير صالحة" };
+  }
+  if (!phone || normalizePhone(phone).length < 7) {
+    return { error: "رقم تلفون العميلة غير صالح" };
+  }
+
+  const password = normalizePhone(phone);
+  const authEmail = resolveAuthEmail(rawEmail, phone);
+  if (!authEmail) {
+    return { error: "تعذّر تكوين بيانات الحساب — تأكدي من الرقم" };
+  }
+
+  // Create the auth user. Trigger auto-creates the profile.
+  const { data: created, error: createError } =
+    await admin.auth.admin.createUser({
+      email: authEmail,
+      password,
+      email_confirm: true,
+      user_metadata: { full_name: fullName },
+    });
+
+  if (createError || !created.user) {
+    const msg = (createError?.message ?? "").toLowerCase();
+    if (
+      msg.includes("already registered") ||
+      msg.includes("already exists") ||
+      msg.includes("duplicate")
+    ) {
+      return {
+        error:
+          "هذا الإيميل مسجل مسبقاً — روحي على /admin/clients واربطي الحجز يدوياً من فورم التعديل.",
+      };
+    }
+    return { error: createError?.message ?? "تعذّر إنشاء الحساب" };
+  }
+
+  const userId = created.user.id;
+
+  // Populate the profile row. profile.email only stores real addresses.
+  const profileEmail = rawEmail || null;
+  await admin
+    .from("profiles")
+    .update({
+      full_name: fullName,
+      phone,
+      email: profileEmail,
+      role: "client",
+    })
+    .eq("id", userId);
+
+  // Link THIS booking to the new account
+  await admin
+    .from("bookings")
+    .update({ client_id: userId })
+    .eq("id", booking.id);
+
+  // Link any OTHER orphan bookings whose phone matches
+  const { data: orphans } = await admin
+    .from("bookings")
+    .select("id, client_phone")
+    .is("client_id", null)
+    .neq("id", booking.id);
+
+  const toLink = (orphans ?? [])
+    .filter(
+      (b) =>
+        b.client_phone && normalizePhone(b.client_phone) === password,
+    )
+    .map((b) => b.id);
+
+  if (toLink.length > 0) {
+    await admin
+      .from("bookings")
+      .update({ client_id: userId })
+      .in("id", toLink);
+  }
+
+  revalidatePath("/admin/bookings");
+  revalidatePath(`/admin/bookings/${bookingId}`);
+  revalidatePath("/admin/clients");
+  revalidatePath("/admin");
+
+  return {
+    ok: true,
+    // Use the real email for login if she has one; otherwise her phone
+    // digits (which our /login handler maps to the synthetic email).
+    loginUsername: rawEmail || password,
+    password,
+    linkedExtra: toLink.length,
+  };
 }
 
 export async function deleteBooking(

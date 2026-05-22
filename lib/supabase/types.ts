@@ -47,6 +47,62 @@ export type TripItineraryItem = {
   desc: string;
 };
 
+// ─────────────────────────────────────────────────────────────
+// Trip Companion — per-trip travel guide. Edited from
+// /admin/trips/[id]/companion, shown to clients in
+// /account/trips/[bookingId]. Stored as a single JSONB blob
+// on trips.companion_content (migration 0006). All keys optional —
+// the UI tolerates partial content.
+// ─────────────────────────────────────────────────────────────
+
+export type FlightInfo = {
+  departure_date?: string;        // ISO date, e.g. "2026-06-26"
+  departure_time?: string;        // "23:30"
+  departure_airport?: string;     // "TLV"
+  departure_airport_name?: string;// "Ben Gurion"
+  arrival_airport?: string;       // "BKK"
+  arrival_airport_name?: string;  // "Suvarnabhumi"
+  airline?: string;               // "El Al"
+  flight_number?: string;         // "LY 81"
+  duration?: string;              // "11h 30m"
+  notes?: string;                 // "اوصلي للمطار قبل 3 ساعات"
+};
+
+export type HotelInfo = {
+  name?: string;
+  address?: string;
+  checkin?: string;               // "15:00"
+  checkout?: string;              // "11:00"
+  phone?: string;
+  map_url?: string;
+  notes?: string;
+};
+
+export type RecommendationItem = {
+  title: string;
+  description?: string;
+  url?: string;
+  category?: string;
+};
+
+export type RestaurantItem = {
+  name: string;
+  cuisine?: string;
+  address?: string;
+  note?: string;
+  url?: string;
+};
+
+export type TripCompanion = {
+  flight?: FlightInfo;
+  hotel?: HotelInfo;
+  recommendations?: RecommendationItem[];
+  restaurants?: RestaurantItem[];
+  warnings?: string[];
+  tips?: string[];
+  packing?: string[];
+};
+
 export type TripRow = {
   id: string;
   slug: string;
@@ -71,6 +127,7 @@ export type TripRow = {
   deadline: string | null;
   pdf_path: string | null;
   sort_order: number;
+  companion_content: TripCompanion;
   created_at: string;
   updated_at: string;
 };

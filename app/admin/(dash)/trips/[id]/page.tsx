@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Compass } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { TripRow } from "@/lib/supabase/types";
 import TripForm from "../TripForm";
@@ -37,12 +37,23 @@ export default async function EditTripPage({ params }: { params: Params }) {
           <ArrowRight size={14} />
           <span>العودة للرحلات</span>
         </Link>
-        <h1 className="text-4xl md:text-5xl font-black text-ink">
-          تعديل: {trip.name}
-        </h1>
-        <p className="text-ink/60 mt-2" dir="ltr">
-          {trip.slug}
-        </p>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-black text-ink">
+              تعديل: {trip.name}
+            </h1>
+            <p className="text-ink/60 mt-2" dir="ltr">
+              {trip.slug}
+            </p>
+          </div>
+          <Link
+            href={`/admin/trips/${trip.id}/companion`}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-coral/10 text-coral text-sm font-bold hover:bg-coral/20 transition-colors border border-coral/20"
+          >
+            <Compass size={16} />
+            <span>دليل الرحلة (للعميلات)</span>
+          </Link>
+        </div>
       </header>
 
       <TripForm

@@ -35,14 +35,19 @@ export default function ClientForm({
     <form action={formAction} className="space-y-6" dir="rtl">
       <div className="rounded-2xl border border-coral/20 bg-coral/5 px-4 py-3 flex items-start gap-2.5 text-sm">
         <Info size={16} className="text-coral shrink-0 mt-0.5" />
-        <p className="text-ink/75">
-          إنشاء الحساب بيخلي العميلة تقدر تدخل من{" "}
-          <code className="bg-white px-1 py-0.5 rounded text-coral text-xs">
-            /login
-          </code>{" "}
-          باستخدام إيميلها وكود لمرة واحدة. بنبعتلها رسالة على الواتساب بعدها
-          عشان تفعّل حسابها.
-        </p>
+        <div className="text-ink/75 space-y-1">
+          <p>
+            العميلة بتدخل من{" "}
+            <code className="bg-white px-1 py-0.5 rounded text-coral text-xs">
+              /login
+            </code>{" "}
+            بـ <strong>رقم تلفونها كاسم مستخدم</strong> +{" "}
+            <strong>رقم تلفونها ككلمة سر</strong>.
+          </p>
+          <p className="text-xs text-ink/55">
+            الإيميل اختياري — لو ضفتيه، تقدر تدخل بالإيميل بدل الرقم.
+          </p>
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -71,7 +76,7 @@ export default function ClientForm({
 
       <div className="space-y-2">
         <label className="block text-sm font-bold text-ink">
-          البريد الإلكتروني
+          البريد الإلكتروني <span className="font-normal text-ink/50">(اختياري)</span>
         </label>
         <div className="relative">
           <Mail
@@ -83,7 +88,6 @@ export default function ClientForm({
             type="email"
             defaultValue={defaultEmail ?? ""}
             readOnly={!editableEmail}
-            required={editableEmail}
             dir="ltr"
             className={`w-full rounded-xl border pr-10 pl-4 py-3 text-left focus:outline-none focus:ring-2 transition-all ${
               editableEmail
@@ -93,11 +97,11 @@ export default function ClientForm({
             placeholder="leila@example.com"
           />
         </div>
-        {!editableEmail && (
-          <p className="text-xs text-ink/40">
-            الإيميل هو طريقة تسجيل دخول العميلة — ما بنعدّله بعد إنشاء الحساب
-          </p>
-        )}
+        <p className="text-xs text-ink/40">
+          {editableEmail
+            ? "اختياري — العميلة بتقدر تدخل برقم تلفونها فقط بدون إيميل"
+            : "تركها فاضي ممتاز — العميلة بتسجل دخول برقم تلفونها"}
+        </p>
         {err("email") && (
           <p className="text-xs text-red-600 font-semibold">{err("email")}</p>
         )}

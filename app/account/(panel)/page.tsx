@@ -420,7 +420,13 @@ function BookingCard({ booking }: { booking: BookingWithTrip }) {
           )}
         </div>
 
-        <div className="flex items-center gap-2 mt-auto pt-2">
+        <div className="flex items-center gap-2 mt-auto pt-2 flex-wrap">
+          <Link
+            href={`/account/trips/${booking.id}`}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-coral text-white text-xs font-bold hover:brightness-110 transition-colors"
+          >
+            دليل الرحلة ←
+          </Link>
           {pdfUrl && (
             <a
               href={pdfUrl}
@@ -429,7 +435,7 @@ function BookingCard({ booking }: { booking: BookingWithTrip }) {
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-coral/8 text-coral text-xs font-bold hover:bg-coral/15 transition-colors"
             >
               <Download size={13} />
-              برنامج PDF
+              PDF
             </a>
           )}
         </div>

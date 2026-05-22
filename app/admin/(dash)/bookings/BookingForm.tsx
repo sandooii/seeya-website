@@ -2,8 +2,13 @@
 
 import { useActionState, useMemo, useState } from "react";
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
-import type { BookingRow, CurrencyCode, TripRow } from "@/lib/supabase/types";
+import { Loader2, Link2 } from "lucide-react";
+import type {
+  BookingRow,
+  CurrencyCode,
+  Profile,
+  TripRow,
+} from "@/lib/supabase/types";
 import { bookingStatusLabel } from "@/lib/bookings";
 import { type BookingFormState } from "./actions";
 
@@ -19,6 +24,8 @@ type TripOption = Pick<
   "id" | "name" | "country" | "price" | "currency" | "status"
 >;
 
+type ClientOption = Pick<Profile, "id" | "full_name" | "phone" | "email">;
+
 const STATUS_OPTIONS = (
   ["pending_deposit", "deposit_paid", "paid_full", "cancelled"] as const
 ).map((value) => ({ value, label: bookingStatusLabel[value] }));
@@ -26,11 +33,13 @@ const STATUS_OPTIONS = (
 export default function BookingForm({
   booking,
   trips,
+  clients,
   action,
   submitLabel,
 }: {
   booking?: BookingRow;
   trips: TripOption[];
+  clients: ClientOption[];
   action: Action;
   submitLabel: string;
 }) {
@@ -38,6 +47,32 @@ export default function BookingForm({
 
   // Trip selector state — used to auto-fill price/currency
   const [tripId, setTripId] = useState<string>(booking?.trip_id ?? "");
+
+  // Linked client picker — when set, the booking is associated with a
+  // real account. Inline name/phone/email still get saved as a snapshot.
+  const [clientId, setClientId] = useState<string>(booking?.client_id ?? "");
+
+  // Inline client info — controlled so picking a client can auto-fill them.
+  const [clientName, setClientName] = useState<string>(
+    booking?.client_name ?? "",
+  );
+  const [clientPhone, setClientPhone] = useState<string>(
+    booking?.client_phone ?? "",
+  );
+  const [clientEmail, setClientEmail] = useState<string>(
+    booking?.client_email ?? "",
+  );
+
+  const handleClientPick = (newId: string) => {
+    setClientId(newId);
+    if (!newId) return;
+    const picked = clients.find((c) => c.id === newId);
+    if (!picked) return;
+    // Auto-fill empty inline fields from the picked client
+    if (picked.full_name) setClientName(picked.full_name);
+    if (picked.phone) setClientPhone(picked.phone);
+    if (picked.email) setClientEmail(picked.email);
+  };
 
   const selectedTrip = useMemo(
     () => trips.find((t) => t.id === tripId),
@@ -64,8 +99,42 @@ export default function BookingForm({
         </div>
       )}
 
+      {/* ─── Linked client picker ─── */}
+      <Section
+        title="ربط بعميلة مسجّلة (اختياري)"
+        hint="إذا العميلة عندها حساب من /admin/clients، اختاريها من القائمة — بيتربط الحجز فيها وبتشوفه بصفحتها"
+      >
+        <input type="hidden" name="client_id" value={clientId} />
+        <Field label="العميلة المسجّلة" full>
+          <div className="flex items-center gap-2">
+            <Link2 size={16} className="text-ink/40 shrink-0" />
+            <select
+              value={clientId}
+              onChange={(e) => handleClientPick(e.target.value)}
+              className={inputClass}
+            >
+              <option value="">— حجز يدوي (بدون ربط بحساب) —</option>
+              {clients.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.full_name ?? "بدون اسم"}
+                  {c.phone ? ` · ${c.phone}` : ""}
+                  {c.email ? ` · ${c.email}` : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+        </Field>
+      </Section>
+
       {/* ─── Client info ─── */}
-      <Section title="معلومات العميلة">
+      <Section
+        title="معلومات العميلة"
+        hint={
+          clientId
+            ? "بتعبت تلقائياً من العميلة اللي اخترتيها — تقدري تعدّليها"
+            : undefined
+        }
+      >
         <Field
           label="الاسم الكامل"
           error={fieldError("client_name")}
@@ -73,7 +142,8 @@ export default function BookingForm({
         >
           <input
             name="client_name"
-            defaultValue={booking?.client_name ?? ""}
+            value={clientName}
+            onChange={(e) => setClientName(e.target.value)}
             required
             className={inputClass}
             placeholder="مثال: سارة المحمد"
@@ -88,7 +158,8 @@ export default function BookingForm({
         >
           <input
             name="client_phone"
-            defaultValue={booking?.client_phone ?? ""}
+            value={clientPhone}
+            onChange={(e) => setClientPhone(e.target.value)}
             required
             dir="ltr"
             className={`${inputClass} text-left tabular-nums`}
@@ -103,7 +174,8 @@ export default function BookingForm({
           <input
             name="client_email"
             type="email"
-            defaultValue={booking?.client_email ?? ""}
+            value={clientEmail}
+            onChange={(e) => setClientEmail(e.target.value)}
             dir="ltr"
             className={`${inputClass} text-left`}
             placeholder="sarah@example.com"

@@ -8,10 +8,18 @@ export const metadata = { title: "حجز جديد — Admin" };
 
 export default async function NewBookingPage() {
   const supabase = await createServerSupabaseClient();
-  const { data: trips } = await supabase
-    .from("trips")
-    .select("id, name, country, price, currency, status")
-    .order("sort_order", { ascending: true });
+
+  const [tripsResult, clientsResult] = await Promise.all([
+    supabase
+      .from("trips")
+      .select("id, name, country, price, currency, status")
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("profiles")
+      .select("id, full_name, phone, email")
+      .eq("role", "client")
+      .order("full_name", { ascending: true }),
+  ]);
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -32,7 +40,8 @@ export default async function NewBookingPage() {
       </header>
 
       <BookingForm
-        trips={trips ?? []}
+        trips={tripsResult.data ?? []}
+        clients={clientsResult.data ?? []}
         action={createBooking}
         submitLabel="إنشاء الحجز"
       />
