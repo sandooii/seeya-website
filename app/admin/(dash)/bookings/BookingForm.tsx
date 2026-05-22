@@ -376,16 +376,20 @@ function Field({
   hint,
   error,
   required,
+  full,
   children,
 }: {
   label: string;
   hint?: string;
   error?: string;
   required?: boolean;
+  full?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div className="md:col-span-1 last:md:col-span-2 space-y-1.5">
+    <div
+      className={`space-y-1.5 ${full ? "md:col-span-2" : "md:col-span-1 last:md:col-span-2"}`}
+    >
       {label && (
         <label className="block text-sm font-bold text-ink">
           {label}
