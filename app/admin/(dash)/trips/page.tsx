@@ -123,19 +123,12 @@ export default async function TripsAdminPage() {
                       const full = total > 0 && available === 0;
                       return (
                         <span
-                          className={`inline-flex items-center gap-1.5 font-semibold ${
+                          className={`font-semibold ${
                             full ? "text-emerald-700" : "text-ink/80"
                           }`}
                           dir="ltr"
                         >
-                          <span>
-                            {booked} / {total}
-                          </span>
-                          {full && total > 0 && (
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">
-                              FULL
-                            </span>
-                          )}
+                          {booked} / {total}
                         </span>
                       );
                     })()}
