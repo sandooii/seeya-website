@@ -466,7 +466,7 @@ function FlightCard({ flight }: { flight: FlightInfo }) {
         <div className="flex items-center gap-3 flex-wrap" dir="ltr">
           {flight.departure_airport && (
             <div className="text-center">
-              <div className="text-3xl font-black text-ink tabular-nums">
+              <div className="text-3xl font-black text-ink tabular-nums uppercase tracking-wider">
                 {flight.departure_airport}
               </div>
               {flight.departure_airport_name && (
@@ -479,7 +479,7 @@ function FlightCard({ flight }: { flight: FlightInfo }) {
           <Plane className="text-coral" size={22} />
           {flight.arrival_airport && (
             <div className="text-center">
-              <div className="text-3xl font-black text-ink tabular-nums">
+              <div className="text-3xl font-black text-ink tabular-nums uppercase tracking-wider">
                 {flight.arrival_airport}
               </div>
               {flight.arrival_airport_name && (
