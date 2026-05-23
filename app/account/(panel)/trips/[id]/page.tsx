@@ -155,11 +155,8 @@ export default async function MyTripDetailPage({
               <h1 className="text-3xl md:text-5xl font-black drop-shadow-lg">
                 {trip.name}
               </h1>
-              <p
-                className="text-white/85 text-sm mt-1 tabular-nums"
-                dir="ltr"
-              >
-                {trip.month} · {trip.duration}
+              <p className="text-white/85 text-sm mt-1 tabular-nums">
+                <bdi>{trip.month}</bdi> · <bdi>{trip.duration}</bdi>
               </p>
             </div>
             {trip.start_date && daysUntil !== null && daysUntil >= 0 && (
@@ -173,14 +170,15 @@ export default async function MyTripDetailPage({
       <section className="bg-white rounded-3xl border border-ink/5 p-6">
         <div className="flex items-center justify-between gap-4 flex-wrap mb-3">
           <h2 className="text-lg font-black text-ink">حالة الدفع</h2>
-          <div
-            className="text-sm font-bold text-ink tabular-nums"
-            dir="ltr"
-          >
-            {formatBookingPrice(booking.paid_amount, booking.currency)}
+          <div className="text-sm font-bold text-ink tabular-nums">
+            <bdi>
+              {formatBookingPrice(booking.paid_amount, booking.currency)}
+            </bdi>
             <span className="text-ink/40 font-normal">
               {" / "}
-              {formatBookingPrice(booking.total_amount, booking.currency)}
+              <bdi>
+                {formatBookingPrice(booking.total_amount, booking.currency)}
+              </bdi>
             </span>
           </div>
         </div>
@@ -192,8 +190,9 @@ export default async function MyTripDetailPage({
         </div>
         {remaining > 0 && booking.status !== "cancelled" ? (
           <div className="flex items-center justify-between mt-3 flex-wrap gap-3">
-            <p className="text-sm text-ink/70" dir="ltr">
-              متبقي {formatBookingPrice(remaining, booking.currency)}
+            <p className="text-sm text-ink/70">
+              متبقي{" "}
+              <bdi>{formatBookingPrice(remaining, booking.currency)}</bdi>
             </p>
             <a
               href={waLink(`بدي أدفع باقي رحلة ${trip.name}`)}
@@ -523,8 +522,21 @@ function FlightCard({ flight }: { flight: FlightInfo }) {
       </div>
 
       {flight.notes && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-900">
-          <strong className="font-bold">تذكير:</strong> {flight.notes}
+        <div className="relative overflow-hidden rounded-2xl border-2 border-amber-300 bg-gradient-to-l from-amber-50 to-amber-100/60 shadow-sm">
+          <div className="absolute inset-y-0 right-0 w-1.5 bg-amber-400" />
+          <div className="flex items-start gap-3 p-4 pr-5">
+            <span className="w-9 h-9 rounded-xl bg-amber-400 text-white grid place-items-center shrink-0 shadow-sm">
+              <AlertTriangle size={18} />
+            </span>
+            <div className="space-y-1">
+              <div className="text-[11px] font-black uppercase tracking-[0.2em] text-amber-700">
+                تذكير مهم
+              </div>
+              <p className="text-sm md:text-base font-bold text-amber-900 leading-relaxed">
+                {flight.notes}
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -655,15 +667,12 @@ function Pill({
   ltrValue?: boolean;
 }) {
   return (
-    <div className="bg-ink/3 rounded-xl px-3 py-2">
+    <div className="bg-ink/3 rounded-xl px-3 py-2 text-right">
       <div className="text-[10px] font-bold text-ink/50 uppercase tracking-wider">
         {label}
       </div>
-      <div
-        className="font-bold text-ink mt-0.5"
-        {...(ltrValue ? { dir: "ltr" } : {})}
-      >
-        {value}
+      <div className="font-bold text-ink mt-0.5 tabular-nums">
+        {ltrValue ? <bdi>{value}</bdi> : value}
       </div>
     </div>
   );

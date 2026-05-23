@@ -295,11 +295,9 @@ export default async function BookingsAdminPage({
                         />
                       </div>
                       {remaining > 0 && b.status !== "cancelled" && (
-                        <div
-                          className="text-[10px] text-ink/50 mt-0.5 tabular-nums"
-                          dir="ltr"
-                        >
-                          متبقي {formatBookingPrice(remaining, b.currency)}
+                        <div className="text-[10px] text-ink/50 mt-0.5 tabular-nums">
+                          متبقي{" "}
+                          <bdi>{formatBookingPrice(remaining, b.currency)}</bdi>
                         </div>
                       )}
                     </td>

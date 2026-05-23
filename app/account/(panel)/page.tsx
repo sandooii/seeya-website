@@ -228,11 +228,8 @@ function CountdownCard({
           <h3 className="text-3xl md:text-4xl font-black drop-shadow-lg">
             {tripName}
           </h3>
-          <p
-            className="text-white/85 text-sm mt-1 tabular-nums"
-            dir="ltr"
-          >
-            {tripMonth} · {tripDuration}
+          <p className="text-white/85 text-sm mt-1 tabular-nums">
+            <bdi>{tripMonth}</bdi> · <bdi>{tripDuration}</bdi>
           </p>
         </div>
         <LiveCountdown startsAtIso={startsAtIso} />
@@ -345,11 +342,9 @@ function BookingCard({ booking }: { booking: BookingWithTrip }) {
             />
           </div>
           {remaining > 0 && booking.status !== "cancelled" && (
-            <p
-              className="text-xs text-ink/50 mt-1 tabular-nums"
-              dir="ltr"
-            >
-              متبقي {formatBookingPrice(remaining, booking.currency)}
+            <p className="text-xs text-ink/50 mt-1 tabular-nums">
+              متبقي{" "}
+              <bdi>{formatBookingPrice(remaining, booking.currency)}</bdi>
             </p>
           )}
         </div>
