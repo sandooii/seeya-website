@@ -73,7 +73,7 @@ export default async function TripsAdminPage() {
                 <th className="px-4 py-3 font-bold">الرحلة</th>
                 <th className="px-4 py-3 font-bold">الحالة</th>
                 <th className="px-4 py-3 font-bold">الشهر</th>
-                <th className="px-4 py-3 font-bold">المقاعد</th>
+                <th className="px-4 py-3 font-bold">المحجوزة</th>
                 <th className="px-4 py-3 font-bold">السعر</th>
                 <th className="px-4 py-3 font-bold text-center w-32">
                   إجراءات
@@ -115,11 +115,30 @@ export default async function TripsAdminPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-ink/80 text-sm">{trip.month}</td>
-                  <td
-                    className="px-4 py-3 text-ink/80 tabular-nums"
-                    dir="ltr"
-                  >
-                    {trip.available_spots} / {trip.total_spots}
+                  <td className="px-4 py-3 text-ink/80 tabular-nums">
+                    {(() => {
+                      const total = trip.total_spots ?? 0;
+                      const available = trip.available_spots ?? 0;
+                      const booked = Math.max(0, total - available);
+                      const full = total > 0 && available === 0;
+                      return (
+                        <span
+                          className={`inline-flex items-center gap-1.5 font-semibold ${
+                            full ? "text-emerald-700" : "text-ink/80"
+                          }`}
+                          dir="ltr"
+                        >
+                          <span>
+                            {booked} / {total}
+                          </span>
+                          {full && total > 0 && (
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">
+                              FULL
+                            </span>
+                          )}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td
                     className="px-4 py-3 font-bold text-ink tabular-nums"
