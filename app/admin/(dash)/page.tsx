@@ -226,6 +226,14 @@ export default async function AdminDashboardPage() {
             <span className="text-coral font-bold">✓</span>
             <span>ربط حجز يدوي بحساب عميلة بزر واحد</span>
           </li>
+          <li className="flex gap-3">
+            <span className="text-coral font-bold">✓</span>
+            <span>فورم قائمة انتظار مباشر على الموقع</span>
+          </li>
+          <li className="flex gap-3">
+            <span className="text-coral font-bold">✓</span>
+            <span>تحسينات تجربة الموبايل (sidebar منزلق)</span>
+          </li>
         </ul>
         <h2 className="text-2xl font-black text-ink mt-8 mb-4">
           الخطوات الجاية
@@ -234,14 +242,6 @@ export default async function AdminDashboardPage() {
           <li className="flex gap-3 text-ink/55">
             <span>○</span>
             <span>تذكيرات أوتوماتيكية (دفع، طيران، تجهيز السفر)</span>
-          </li>
-          <li className="flex gap-3 text-ink/55">
-            <span>○</span>
-            <span>فورم قائمة انتظار مباشر بالموقع</span>
-          </li>
-          <li className="flex gap-3 text-ink/55">
-            <span>○</span>
-            <span>تحسينات تجربة الموبايل (sidebar منزلق)</span>
           </li>
         </ul>
       </section>
