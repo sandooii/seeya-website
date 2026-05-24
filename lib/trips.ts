@@ -22,6 +22,8 @@ export function dbTripToLegacy(row: TripRow): Trip {
     name: row.name,
     country: row.country,
     month: row.month,
+    startDate: row.start_date,
+    endDate: row.end_date,
     duration: row.duration,
     price: Number(row.price),
     currency: row.currency === "USD" ? "$" : "₪",

@@ -4,8 +4,8 @@
  */
 
 export const CONTACT = {
-  /** WhatsApp number in full international format (no + or dashes) — used in wa.me links */
-  whatsappIntl: "9720544880123",
+  /** WhatsApp number in full international format (no + or dashes, no local leading 0) — used in wa.me links */
+  whatsappIntl: "972544880123",
   /** Human-readable WhatsApp number — used in UI display */
   whatsappDisplay: "054-488-0123",
   /** Brand email */
@@ -20,7 +20,7 @@ export const CONTACT = {
  * Build a `wa.me` URL with an optional pre-filled message.
  *
  * @example
- * waLink("بدي أحجز رحلة تايلاند") // → "https://wa.me/9720544880123?text=..."
+ * waLink("بدي أحجز رحلة تايلاند") // → "https://wa.me/972544880123?text=..."
  */
 export function waLink(message?: string): string {
   const base = `https://wa.me/${CONTACT.whatsappIntl}`;

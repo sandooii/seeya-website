@@ -237,7 +237,7 @@ function ThailandBody({
               border: "1px solid rgba(249,92,107,0.3)",
             }}
           >
-            26.06.2026 – 06.07.2026
+            {trip.month}
           </span>
         </div>
 

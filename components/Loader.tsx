@@ -19,6 +19,7 @@ export default function Loader() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (skipOnRoute) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setVisible(false);
       return;
     }
@@ -50,6 +51,9 @@ export default function Loader() {
       clearTimeout(hideTimer);
       document.documentElement.style.overflow = "";
     };
+    // skipOnRoute changes when the route does — but the loader is a
+    // one-shot landing animation; we only care about its value at mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

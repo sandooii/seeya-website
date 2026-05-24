@@ -131,7 +131,7 @@ export default function TripForm({
         <Field
           label="نص التاريخ المعروض"
           error={fieldError("month")}
-          hint="هذا اللي يظهر للزائر — مثال: 26.06.2026 – 06.07.2026"
+          hint="هذا اللي يظهر للزائر — مثال: 25.06.2026 – 05.07.2026"
           required
         >
           <input

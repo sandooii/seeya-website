@@ -5,12 +5,17 @@ import { motion, useInView } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import type { Trip } from "./data";
 
-const TARGET = new Date("2026-06-26T00:00:00").getTime();
+/**
+ * Fallback used only if the trip row is missing or has no start_date.
+ * The real countdown TARGET is derived from trip.startDate inside the
+ * component so it always tracks the actual trip date in the DB.
+ */
+const FALLBACK_TARGET = new Date("2026-06-25T00:00:00").getTime();
 
 type Tick = { d: number; h: number; m: number; s: number; gone: boolean };
 
-function diff(): Tick {
-  const ms = TARGET - Date.now();
+function diff(target: number): Tick {
+  const ms = target - Date.now();
   if (ms <= 0) return { d: 0, h: 0, m: 0, s: 0, gone: true };
   const d = Math.floor(ms / 86_400_000);
   const h = Math.floor((ms / 3_600_000) % 24);
@@ -232,11 +237,19 @@ export default function Countdown({ trip }: { trip: Trip | null }) {
   const booked = Math.max(0, totalSeats - available);
   const isSoldOut = trip?.status === "sold-out" || available === 0;
 
+  // Derive the countdown TARGET from the trip's start_date so the
+  // countdown can never disagree with the actual booking dates.
+  // Falls back to the hardcoded date only when the trip row is absent.
+  const target = trip?.startDate
+    ? new Date(`${trip.startDate}T00:00:00`).getTime()
+    : FALLBACK_TARGET;
+
   useEffect(() => {
-    setT(diff());
-    const id = setInterval(() => setT(diff()), 1000);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- diff() depends on Date.now() and cannot run during render; mount-only setup is intentional
+    setT(diff(target));
+    const id = setInterval(() => setT(diff(target)), 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [target]);
 
   return (
     <section className="relative overflow-hidden py-20 md:py-28">
@@ -305,7 +318,7 @@ export default function Countdown({ trip }: { trip: Trip | null }) {
           className="mt-3 text-lg md:text-2xl text-white/90 max-w-2xl mx-auto"
         >
           <span dir="ltr" lang="en" className="tabular-nums">
-            26.06.2026 – 06.07.2026
+            {trip?.month ?? "25.06.2026 – 05.07.2026"}
           </span>{" "}
           · {isSoldOut ? "نفدت المقاعد — قائمة الانتظار مفتوحة" : "باقي أماكن محدودة"}
         </motion.p>

@@ -49,8 +49,9 @@ export default function AdminSidebar({
   const [open, setOpen] = useState(false);
 
   // Close the drawer whenever the route changes — feels natural on
-  // mobile after tapping a nav item.
+  // mobile after tapping a nav item. The single extra render is fine.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOpen(false);
   }, [pathname]);
 

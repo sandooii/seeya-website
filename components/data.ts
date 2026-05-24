@@ -7,6 +7,10 @@ export type Trip = {
   name: string;
   country: string;
   month: string;
+  /** Trip start date as ISO ("2026-06-25") — drives the countdown TARGET */
+  startDate?: string | null;
+  /** Trip end date as ISO ("2026-07-05") — kept for symmetry / future use */
+  endDate?: string | null;
   duration: string;
   price: number;
   /** "₪" for ILS, "$" for USD. Defaults to USD when omitted. */

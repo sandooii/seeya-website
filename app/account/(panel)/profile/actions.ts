@@ -1,17 +1,21 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  createServerSupabaseClient,
+  createServiceRoleClient,
+} from "@/lib/supabase/server";
+import {
+  isInternalEmail,
+  normalizePhone,
+  resolveAuthEmail,
+} from "@/lib/auth-helpers";
 
 export type ProfileFormState = {
   error?: string;
   success?: boolean;
   fieldErrors?: Record<string, string>;
 };
-
-function normalizePhone(phone: string): string {
-  return phone.replace(/\D/g, "");
-}
 
 export async function updateProfile(
   _prev: ProfileFormState,
@@ -35,12 +39,51 @@ export async function updateProfile(
   } = await supabase.auth.getUser();
   if (!user) return { error: "الجلسة انتهت — سجلي دخول مرة ثانية" };
 
-  const { error } = await supabase
+  // 1) Update the profile row (RLS-safe, runs as the caller).
+  const { error: profileError } = await supabase
     .from("profiles")
     .update({ full_name, phone })
     .eq("id", user.id);
 
-  if (error) return { error: error.message };
+  if (profileError) return { error: profileError.message };
+
+  // 2) Keep auth.users in sync with the new phone. The convention across
+  //    SeeYa is `password = phone digits` and (when the client has no
+  //    real email) `email = <digits>@seeya.app`. If we update profiles
+  //    but not auth.users, the next login fails because Supabase still
+  //    expects the OLD digits as username + password.
+  //
+  //    This mirrors the admin-side updateClient logic in
+  //    app/admin/(dash)/clients/actions.ts. It MUST use the service-role
+  //    client because auth.users mutation requires admin privileges.
+  const newDigits = normalizePhone(phone);
+  if (newDigits.length >= 7) {
+    const admin = createServiceRoleClient();
+    const { data: authUser } = await admin.auth.admin.getUserById(user.id);
+    const currentAuthEmail = authUser?.user?.email ?? null;
+
+    const updates: { password: string; email?: string } = {
+      password: newDigits,
+    };
+    // Only rewrite the email when it's the synthetic placeholder; never
+    // overwrite a real address the client gave us.
+    if (isInternalEmail(currentAuthEmail)) {
+      updates.email = resolveAuthEmail(null, phone) ?? undefined;
+    }
+
+    const { error: authError } = await admin.auth.admin.updateUserById(
+      user.id,
+      updates,
+    );
+    // Auth update is best-effort: the profile row is already saved. We
+    // surface the error so the client knows to ping support, but we
+    // don't roll back her name change.
+    if (authError) {
+      return {
+        error: `تم حفظ الاسم لكن في مشكلة بمزامنة الرقم — كلمينا: ${authError.message}`,
+      };
+    }
+  }
 
   revalidatePath("/account");
   revalidatePath("/account/profile");

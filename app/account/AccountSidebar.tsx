@@ -41,8 +41,12 @@ export default function AccountSidebar({
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  // Auto-close after navigation
+  // Auto-close after navigation — intentional: drawer must collapse when
+  // the URL changes (mobile tap on a nav item) and there's no callback
+  // we can hang off router.push since Link drives it. One render churn
+  // is acceptable.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOpen(false);
   }, [pathname]);
 

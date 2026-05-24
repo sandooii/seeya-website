@@ -26,13 +26,21 @@ export default async function AccountPanelLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, phone, email")
+    .select("full_name, phone, email, role")
     .eq("id", user.id)
     .single();
 
   if (!profile) {
     await supabase.auth.signOut();
     redirect("/login");
+  }
+
+  // Admins don't have a client profile shape (no phone, etc.). If one
+  // wanders into /account, send her to the admin dashboard rather than
+  // silently signing her out — losing a live admin session mid-task
+  // (e.g. editing a trip) is data-loss-grade UX.
+  if (profile.role === "admin") {
+    redirect("/admin");
   }
 
   if (!profile.full_name?.trim() || !profile.phone?.trim()) {
