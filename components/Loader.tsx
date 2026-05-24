@@ -24,6 +24,15 @@ export default function Loader() {
       return;
     }
 
+    // Skip when the user arrived with a hash (e.g. /#trips from a CTA
+    // in the account area). The hash means "take me to this section
+    // now" — covering the page with a 2-second loader makes the scroll
+    // feel broken because the section is already in view behind it.
+    if (window.location.hash) {
+      setVisible(false);
+      return;
+    }
+
     if (sessionStorage.getItem(STORAGE_KEY)) {
       setVisible(false);
       return;
