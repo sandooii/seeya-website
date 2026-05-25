@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Loader2 } from "lucide-react";
 import { signInWithPassword, type LoginState } from "./actions";
 
 const initialState: LoginState = {};
@@ -10,6 +11,10 @@ export default function LoginForm({ nextPath }: { nextPath?: string }) {
     signInWithPassword,
     initialState,
   );
+  const hasError = Boolean(state?.error);
+  const errorRing = hasError
+    ? "border-red-400 focus:ring-red-300/40 focus:border-red-500"
+    : "border-ink/15 focus:ring-coral/40 focus:border-coral/60";
 
   return (
     <form action={formAction} className="space-y-5" dir="rtl">
@@ -30,7 +35,7 @@ export default function LoginForm({ nextPath }: { nextPath?: string }) {
           required
           dir="ltr"
           placeholder="you@example.com"
-          className="w-full rounded-xl border border-ink/15 px-4 py-3 text-ink text-left focus:outline-none focus:ring-2 focus:ring-coral/40 focus:border-coral/60 transition-all"
+          className={`w-full rounded-xl border px-4 py-3 text-ink text-left focus:outline-none focus:ring-2 transition-all ${errorRing}`}
         />
       </div>
 
@@ -48,19 +53,14 @@ export default function LoginForm({ nextPath }: { nextPath?: string }) {
           autoComplete="current-password"
           required
           dir="ltr"
-          className="w-full rounded-xl border border-ink/15 px-4 py-3 text-ink text-left focus:outline-none focus:ring-2 focus:ring-coral/40 focus:border-coral/60 transition-all"
+          className={`w-full rounded-xl border px-4 py-3 text-ink text-left focus:outline-none focus:ring-2 transition-all ${errorRing}`}
         />
       </div>
 
       {state?.error && (
         <div
           role="alert"
-          className="rounded-xl px-4 py-3 text-sm text-right"
-          style={{
-            backgroundColor: "rgba(249,92,107,0.08)",
-            color: "#c8324b",
-            border: "1px solid rgba(249,92,107,0.25)",
-          }}
+          className="rounded-xl px-4 py-3 text-sm text-right bg-red-50 text-red-700 border border-red-200"
         >
           {state.error}
         </div>
@@ -69,9 +69,9 @@ export default function LoginForm({ nextPath }: { nextPath?: string }) {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:brightness-110 active:scale-[0.99]"
-        style={{ backgroundColor: "#F95C6B" }}
+        className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-white bg-coral transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:brightness-110 active:scale-[0.99]"
       >
+        {isPending && <Loader2 size={16} className="animate-spin" />}
         {isPending ? "جاري التحقق..." : "تسجيل الدخول"}
       </button>
     </form>

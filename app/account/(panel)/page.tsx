@@ -165,12 +165,34 @@ export default async function AccountHomePage({
 
       {/* ─── Empty state — no bookings at all ─── */}
       {bookings.length === 0 && (
-        <EmptyState
-          icon={<Plane size={28} />}
-          title="ما عندك حجوزات بعد"
-          description="لما تحجزي رحلة، رح تظهر هون مع كل تفاصيلها"
-          cta={{ label: "تصفحي الرحلات", href: "/#trips" }}
-        />
+        <div className="bg-white rounded-3xl border border-dashed border-ink/15 p-8 md:p-10 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-coral/8 text-coral mx-auto mb-3 grid place-items-center">
+            <Plane size={28} />
+          </div>
+          <h3 className="font-black text-ink text-lg">ما عندك حجوزات بعد</h3>
+          <p className="text-sm text-ink/60 mt-2 max-w-md mx-auto">
+            تصفّحي رحلاتنا واختاري وجهتك، وللحجز كلميني مباشرة على الواتساب
+            وبكون معاكِ كل خطوة.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-5">
+            <Link
+              href="/#trips"
+              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-coral text-white text-sm font-bold hover:brightness-110 transition-colors"
+            >
+              <ArrowLeft size={14} />
+              تصفحي الرحلات
+            </Link>
+            <a
+              href={waLink("مرحبا، حابة احجز رحلة 🌍")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
+            >
+              <MessageCircle size={14} />
+              كلميني للحجز
+            </a>
+          </div>
+        </div>
       )}
 
       {/* ─── Floating WhatsApp button ─── */}
@@ -372,21 +394,25 @@ function PaymentStatus({ booking }: { booking: BookingWithTrip }) {
 
   // Nothing paid yet (pending deposit).
   return (
-    <div className="flex items-center justify-between flex-wrap gap-3">
-      <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-50 text-amber-700 text-sm font-bold border border-amber-200">
+    <div className="flex flex-col gap-2.5">
+      <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-50 text-amber-700 text-sm font-bold border border-amber-200 self-start">
         <AlertCircle size={16} />
-        بانتظار المقدّم{" "}
-        <bdi className="tabular-nums">
-          ({formatBookingPrice(total, currency)})
-        </bdi>
+        بانتظار دفع المقدّم لتأكيد الحجز
       </div>
+      <p className="text-xs text-ink/70">
+        إجمالي الرحلة{" "}
+        <bdi className="font-bold text-ink tabular-nums">
+          {formatBookingPrice(total, currency)}
+        </bdi>{" "}
+        — كلميني وبنرتّب طريقة الدفع.
+      </p>
       <a
         href={waLink(`بدي أدفع مقدّم رحلة ${booking.trip?.name ?? ""}`)}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1 text-xs font-bold text-coral hover:underline"
+        className="inline-flex items-center justify-center gap-2 self-start px-4 py-2.5 rounded-full text-sm font-bold text-white bg-coral hover:brightness-110 transition-all shadow-[0_6px_18px_-6px_rgba(255,90,74,0.55)]"
       >
-        <MessageCircle size={12} />
+        <MessageCircle size={14} />
         كلميني للدفع
       </a>
     </div>
@@ -487,41 +513,6 @@ function CompactBookingCard({ booking }: { booking: BookingWithTrip }) {
         </div>
       </div>
     </article>
-  );
-}
-
-// ─── Empty state ───
-
-function EmptyState({
-  icon,
-  title,
-  description,
-  cta,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description?: string;
-  cta?: { label: string; href: string };
-}) {
-  return (
-    <div className="bg-white rounded-3xl border border-dashed border-ink/15 p-10 text-center">
-      <div className="w-14 h-14 rounded-2xl bg-coral/8 text-coral mx-auto mb-3 grid place-items-center">
-        {icon}
-      </div>
-      <h3 className="font-black text-ink">{title}</h3>
-      {description && (
-        <p className="text-sm text-ink/55 mt-1.5">{description}</p>
-      )}
-      {cta && (
-        <Link
-          href={cta.href}
-          className="inline-flex items-center gap-1.5 mt-4 px-4 py-2 rounded-full bg-coral text-white text-sm font-bold hover:brightness-110 transition-colors"
-        >
-          <ArrowLeft size={14} />
-          {cta.label}
-        </Link>
-      )}
-    </div>
   );
 }
 

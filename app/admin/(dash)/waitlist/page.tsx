@@ -297,8 +297,8 @@ export default async function WaitlistAdminPage({
                     className="px-4 py-12 text-center text-ink/40"
                   >
                     {q || tripFilter || statusFilter
-                      ? "ما في إدخالات تطابق الفلاتر."
-                      : "قائمة الانتظار فاضية. أضيفي أول إدخال!"}
+                      ? "لا توجد إدخالات تطابق الفلاتر."
+                      : "لا توجد إدخالات في قائمة الانتظار بعد. أضيفي أول إدخال!"}
                   </td>
                 </tr>
               )}

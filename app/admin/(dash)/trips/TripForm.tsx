@@ -51,6 +51,7 @@ export default function TripForm({
             name="name"
             defaultValue={trip?.name ?? ""}
             required
+            maxLength={100}
             className={inputClass}
             placeholder="مثال: تايلاند · بوكيت"
           />

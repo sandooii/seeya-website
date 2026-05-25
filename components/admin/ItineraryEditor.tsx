@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, GripVertical } from "lucide-react";
+import { Plus, Trash2, GripVertical, ChevronUp, ChevronDown } from "lucide-react";
 import type { TripItineraryItem } from "@/lib/supabase/types";
 
 /**
@@ -76,7 +76,7 @@ export default function ItineraryEditor({
                 aria-label="حرّكي للأعلى"
                 className="w-7 h-7 grid place-items-center rounded-lg text-ink/40 hover:text-ink hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed"
               >
-                ↑
+                <ChevronUp size={14} />
               </button>
               <button
                 type="button"
@@ -85,7 +85,7 @@ export default function ItineraryEditor({
                 aria-label="حرّكي للأسفل"
                 className="w-7 h-7 grid place-items-center rounded-lg text-ink/40 hover:text-ink hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed"
               >
-                ↓
+                <ChevronDown size={14} />
               </button>
               <button
                 type="button"

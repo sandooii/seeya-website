@@ -177,12 +177,12 @@ export default async function AdminDashboardPage() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       <header>
-        <h1 className="text-4xl md:text-5xl font-black text-ink">
+        <h1 className="text-3xl md:text-5xl font-black text-ink">
           مرحبا بكِ في لوحة الإدارة
         </h1>
-        <p className="text-ink/60 mt-2 text-lg">نظرة سريعة على المنصة</p>
+        <p className="text-ink/60 mt-2 text-base md:text-lg">نظرة سريعة على المنصة</p>
       </header>
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -352,7 +352,7 @@ export default async function AdminDashboardPage() {
               </Link>
             </div>
             {recentBookings.length === 0 ? (
-              <p className="text-ink/40 text-sm">— ما في حجوزات بعد —</p>
+              <p className="text-ink/40 text-sm">— لا توجد حجوزات بعد —</p>
             ) : (
               <ul className="space-y-2">
                 {recentBookings.map((b) => (
@@ -397,7 +397,7 @@ export default async function AdminDashboardPage() {
               </Link>
             </div>
             {recentWaitlist.length === 0 ? (
-              <p className="text-ink/40 text-sm">— ما في طلبات هذا الأسبوع —</p>
+              <p className="text-ink/40 text-sm">— لا توجد طلبات هذا الأسبوع —</p>
             ) : (
               <ul className="space-y-2">
                 {recentWaitlist.map((w) => (

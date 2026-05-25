@@ -204,13 +204,13 @@ export default function FAQ() {
           className="mt-12 md:mt-14 rounded-2xl bg-gradient-to-br from-coral/10 via-pale to-white border border-coral/20 p-7 md:p-9 text-center"
         >
           <p className="text-ink/70 text-sm md:text-base">
-            ما لقيتِ جواب لسؤالك؟
+            أي سؤال لسه ببالكِ؟
           </p>
           <h3 className="mt-2 text-2xl md:text-3xl font-black text-ink">
-            احكي معنا مباشرة
+            كلميني على الواتساب 💬
           </h3>
           <p className="mt-2 text-ink/60 text-sm md:text-base max-w-md mx-auto">
-            رح نرد عليكِ على الواتساب خلال ساعات قليلة.
+            رح ارد عليكِ خلال ساعات قليلة وبجاوبك على كل تفصيل.
           </p>
           <a
             href={waLink("مرحبا، عندي سؤال عن رحلاتكم")}
@@ -219,7 +219,7 @@ export default function FAQ() {
             className="mt-5 inline-flex items-center gap-2 bg-coral text-white px-7 py-3 rounded-full text-sm md:text-base font-bold hover:brightness-110 transition-all shadow-[0_8px_22px_-6px_rgba(255,90,74,0.55)]"
           >
             <MessageCircle size={18} />
-            راسلينا على الواتساب
+            راسليني على الواتساب
           </a>
         </motion.div>
       </div>

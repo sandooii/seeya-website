@@ -33,12 +33,12 @@ export default function LoginForm({ nextPath }: { nextPath?: string }) {
             autoComplete="username"
             required
             dir="ltr"
-            placeholder="0501234567"
+            placeholder="+972 50 123 4567"
             className="w-full rounded-xl border border-ink/15 pr-10 pl-4 py-3 text-ink text-left tabular-nums focus:outline-none focus:ring-2 focus:ring-coral/40 focus:border-coral/60 transition-all"
           />
         </div>
         <p className="text-xs text-ink/45">
-          أدخلي رقم تلفونك (أو إيميلك إذا حابة)
+          ابدأي بـ +972 أو 0 — أو ادخلي إيميلك إذا حابة
         </p>
       </div>
 

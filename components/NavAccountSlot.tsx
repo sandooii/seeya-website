@@ -63,8 +63,8 @@ export default async function NavAccountSlot({
 
   return (
     <Link href="/account" className={pill}>
-      <User size={14} />
-      <span>{firstName}</span>
+      <User size={14} className="shrink-0" />
+      <span className="max-w-[110px] truncate">{firstName}</span>
     </Link>
   );
 }

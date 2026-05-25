@@ -338,24 +338,17 @@ function ThailandBody({
       {/* G) BUTTONS */}
       <div className="flex flex-col gap-3 mt-8">
         {trip.status === "sold-out" ? (
-          <>
-            <div
-              className="w-full text-center py-3 rounded-2xl text-sm font-bold"
-              style={{
-                backgroundColor: "rgba(26,10,12,0.06)",
-                color: "#1a0a0c",
-              }}
-            >
-              💔 نفدت المقاعد — انضمي لقائمة الانتظار وراح نخبرك أول لمّا يصير مكان
-            </div>
+          <div className="flex flex-col gap-2">
+            <p className="text-center text-sm font-bold text-ink/70">
+              💔 نفدت المقاعد — سجّلي بقائمة الانتظار وبنخبرك أول لما يصير مكان
+            </p>
             <WaitlistFormModal
               tripSlug={trip.id}
               tripName={trip.name}
-              triggerLabel="انضمي لقائمة الانتظار"
-              triggerIcon={<span className="text-lg">🔔</span>}
-              triggerClassName="w-full flex items-center justify-center gap-3 py-4 rounded-full font-bold text-white text-base bg-coral hover:brightness-110 transition-all"
+              triggerLabel="🔔 سجّليني بقائمة الانتظار"
+              triggerClassName="w-full flex items-center justify-center gap-3 py-4 rounded-full font-bold text-white text-base bg-coral hover:brightness-110 transition-all shadow-[0_8px_24px_-8px_rgba(255,90,74,0.55)]"
             />
-          </>
+          </div>
         ) : (
           <a
             href={waLink(`بدي أحجز رحلة ${trip.name} 🌍`)}

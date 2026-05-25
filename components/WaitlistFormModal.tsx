@@ -122,7 +122,11 @@ export default function WaitlistFormModal({
                     </div>
                   </Field>
 
-                  <Field label="رقم الواتساب" error={err("phone")}>
+                  <Field
+                    label="رقم الواتساب"
+                    error={err("phone")}
+                    hint="ابدأي بـ +972 أو 0"
+                  >
                     <div className="relative">
                       <PhoneIcon
                         size={16}
@@ -191,10 +195,13 @@ export default function WaitlistFormModal({
                 <h2 className="text-2xl font-black text-ink mb-2">
                   تم تسجيلك! 🎉
                 </h2>
-                <p className="text-ink/70 text-sm mb-6">
-                  بنبلغك أول ما يصير في مكان برحلة <strong>{tripName}</strong>{" "}
-                  ✨
+                <p className="text-ink/70 text-sm mb-3">
+                  سجّلناكِ بقائمة الانتظار لرحلة{" "}
+                  <strong>{tripName}</strong>.
                 </p>
+                <div className="rounded-2xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-emerald-800 text-sm mb-6">
+                  📱 بنبلغك على الواتساب خلال 24 ساعة لما يصير في مكان.
+                </div>
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
@@ -217,16 +224,21 @@ const inputClass =
 function Field({
   label,
   error,
+  hint,
   children,
 }: {
   label: string;
   error?: string;
+  hint?: string;
   children: React.ReactNode;
 }) {
   return (
     <div className="space-y-1.5">
       <label className="block text-sm font-bold text-ink">{label}</label>
       {children}
+      {hint && !error && (
+        <p className="text-[11px] text-ink/45">{hint}</p>
+      )}
       {error && <p className="text-xs text-red-600 font-semibold">{error}</p>}
     </div>
   );

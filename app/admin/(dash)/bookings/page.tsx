@@ -332,7 +332,7 @@ export default async function BookingsAdminPage({
                     className="px-4 py-12 text-center text-ink/40"
                   >
                     {q || tripFilter || statusFilter
-                      ? "ما في حجوزات تطابق الفلاتر."
+                      ? "لا توجد حجوزات تطابق الفلاتر."
                       : "لا توجد حجوزات بعد. أضيفي أول حجز!"}
                   </td>
                 </tr>

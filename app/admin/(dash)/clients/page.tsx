@@ -199,7 +199,9 @@ export default async function ClientsAdminPage() {
                           {formatDateTime(lastLogin)}
                         </span>
                       ) : (
-                        <span className="text-ink/30">ما دخلت بعد</span>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 font-semibold border border-amber-200">
+                          ما دخلت بعد
+                        </span>
                       )}
                     </td>
                     <td
@@ -244,7 +246,7 @@ export default async function ClientsAdminPage() {
                     colSpan={6}
                     className="px-4 py-12 text-center text-ink/40"
                   >
-                    ما في عميلات مسجّلات بعد. اضغطي &quot;إضافة عميلة&quot; لإنشاء أول حساب.
+                    لا توجد عميلات مسجّلات بعد. اضغطي &quot;إضافة عميلة&quot; لإنشاء أول حساب.
                   </td>
                 </tr>
               )}

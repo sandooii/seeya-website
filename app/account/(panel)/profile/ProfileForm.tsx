@@ -22,7 +22,8 @@ export default function ProfileForm({
     <form action={action} className="space-y-5" dir="rtl">
       <div className="space-y-2">
         <label className="block text-sm font-bold text-ink">
-          الاسم الكامل
+          الاسم الكامل{" "}
+          <span className="text-coral">*</span>
         </label>
         <input
           name="full_name"
@@ -39,7 +40,8 @@ export default function ProfileForm({
 
       <div className="space-y-2">
         <label className="block text-sm font-bold text-ink">
-          رقم الواتساب
+          رقم الواتساب{" "}
+          <span className="text-coral">*</span>
         </label>
         <input
           name="phone"
@@ -47,8 +49,12 @@ export default function ProfileForm({
           defaultValue={defaultPhone}
           required
           dir="ltr"
+          placeholder="+972 50 123 4567"
           className="w-full rounded-xl border border-ink/15 px-4 py-3 text-ink text-left tabular-nums focus:outline-none focus:ring-2 focus:ring-coral/40 focus:border-coral/60"
         />
+        <p className="text-[11px] text-ink/45">
+          ابدأي بـ +972 أو 0 — هاد هو رقمك بنفس الوقت كلمة السر
+        </p>
         {err("phone") && (
           <p className="text-xs text-red-600 font-semibold">{err("phone")}</p>
         )}

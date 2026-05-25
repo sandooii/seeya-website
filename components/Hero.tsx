@@ -151,15 +151,23 @@ function FlapText({
 export default function Hero() {
   // Board always starts at index 0 (Thailand · SOLD OUT)
   const [idx, setIdx] = useState(0);
+  // Bump this to (silently) restart the auto-cycle timer — used when the
+  // user clicks a dot, so we don't immediately advance off her choice.
+  const [pauseToken, setPauseToken] = useState(0);
 
   useEffect(() => {
     const id = setInterval(() => {
       setIdx((i) => (i + 1) % flights.length);
     }, 3500);
     return () => clearInterval(id);
-  }, []);
+  }, [pauseToken]);
 
   const current = flights[idx];
+
+  const handleSelect = (i: number) => {
+    setIdx(i);
+    setPauseToken((t) => t + 1);
+  };
 
   return (
     <>
@@ -188,7 +196,12 @@ export default function Hero() {
           className="w-full max-w-[820px] mx-auto rounded-2xl"
           style={{ boxShadow: "0 25px 70px rgba(0,0,0,0.1)" }}
         >
-          <Board flight={current} index={idx} total={flights.length} />
+          <Board
+            flight={current}
+            index={idx}
+            total={flights.length}
+            onSelect={handleSelect}
+          />
         </motion.div>
       </div>
     </section>
@@ -268,10 +281,12 @@ function Board({
   flight,
   index,
   total,
+  onSelect,
 }: {
   flight: Flight;
   index: number;
   total: number;
+  onSelect: (i: number) => void;
 }) {
   return (
     <div
@@ -321,13 +336,16 @@ function Board({
         </Row>
       </div>
 
-      {/* progress dots */}
+      {/* progress dots — clickable */}
       <div className="flex items-center justify-center gap-2 mt-5 pt-4 border-t border-white/5">
         {Array.from({ length: total }).map((_, i) => (
-          <span
+          <button
             key={i}
-            className={`h-1 rounded-full transition-all duration-500 ${
-              i === index ? "w-6 bg-coral" : "w-1.5 bg-white/20"
+            type="button"
+            onClick={() => onSelect(i)}
+            aria-label={`عرض الرحلة رقم ${i + 1}`}
+            className={`h-2 rounded-full transition-all duration-500 cursor-pointer hover:bg-coral/70 ${
+              i === index ? "w-8 bg-coral" : "w-2 bg-white/20"
             }`}
           />
         ))}
