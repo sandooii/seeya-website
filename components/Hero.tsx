@@ -177,7 +177,7 @@ export default function Hero() {
           className="w-full max-w-[680px] mb-4 text-center text-sm italic leading-relaxed"
           style={{ color: "#9e6a70" }}
         >
-          4 رحلات. كل 3 ثواني تتقلب لوحة المغادرة. وحدة منهم بتنادي عليكِ.
+          لوحة مغادرات SeeYa — رحلاتنا القادمة لكل أنثى.
         </motion.p>
 
         <motion.div
@@ -185,8 +185,8 @@ export default function Hero() {
           whileInView={{ y: 0, opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full max-w-[680px] mx-auto rounded-2xl"
-          style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.08)" }}
+          className="w-full max-w-[820px] mx-auto rounded-2xl"
+          style={{ boxShadow: "0 25px 70px rgba(0,0,0,0.1)" }}
         >
           <Board flight={current} index={idx} total={flights.length} />
         </motion.div>
@@ -294,7 +294,7 @@ function Board({
       </div>
 
       {/* rows */}
-      <div className="space-y-3 md:space-y-4">
+      <div className="space-y-4 md:space-y-5">
         <Row label="DESTINATION">
           <FlapText
             text={flight.destination}
@@ -348,7 +348,7 @@ function Row({
       <span className="text-[10px] md:text-xs tracking-[0.3em] font-bold text-white/40 shrink-0 w-20 md:w-28">
         {label}
       </span>
-      <div className="text-2xl md:text-4xl leading-none">{children}</div>
+      <div className="text-3xl md:text-5xl leading-none">{children}</div>
     </div>
   );
 }

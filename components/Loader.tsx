@@ -48,12 +48,12 @@ export default function Loader() {
         }
         return t + 1;
       });
-    }, 55);
+    }, 30);
 
     const hideTimer = setTimeout(() => {
       setVisible(false);
       sessionStorage.setItem(STORAGE_KEY, "1");
-    }, 2200);
+    }, 1200);
 
     return () => {
       clearInterval(typeInterval);
@@ -109,7 +109,7 @@ export default function Loader() {
             <motion.p
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.5 }}
+              transition={{ delay: 0.2, duration: 0.4 }}
               dir="ltr"
               className="font-display italic text-xl md:text-2xl tracking-wide tabular-nums min-h-[1.5em]"
             >

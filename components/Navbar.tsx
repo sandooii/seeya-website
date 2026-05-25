@@ -56,6 +56,10 @@ export default function Navbar({
               height: "44px",
               width: "auto",
               objectFit: "contain",
+              filter: scrolled
+                ? "none"
+                : "drop-shadow(0 2px 6px rgba(0,0,0,0.55)) drop-shadow(0 1px 1px rgba(0,0,0,0.35))",
+              transition: "filter 0.4s ease",
             }}
           />
         </a>

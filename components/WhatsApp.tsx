@@ -28,16 +28,16 @@ export default function WhatsApp() {
       }}
       whileHover={{ scale: 1.08 }}
       whileTap={{ scale: 0.94 }}
-      className="group fixed bottom-6 left-6 z-[90] grid place-items-center w-14 h-14 rounded-full shadow-[0_15px_40px_-10px_rgba(37,211,102,0.6)] focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-300/40"
+      className="group fixed bottom-5 left-5 z-[90] grid place-items-center w-12 h-12 rounded-full shadow-[0_10px_30px_-8px_rgba(37,211,102,0.55)] focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-300/40"
       style={{ backgroundColor: "#25D366" }}
     >
-      {/* Pulsing ring */}
-      <span className="absolute inset-0 rounded-full bg-[#25D366] opacity-50 animate-ping" />
+      {/* Pulsing ring (subtle) */}
+      <span className="absolute inset-0 rounded-full bg-[#25D366] opacity-35 animate-ping" />
 
       {/* WhatsApp glyph */}
       <svg
-        width="28"
-        height="28"
+        width="22"
+        height="22"
         viewBox="0 0 32 32"
         fill="white"
         aria-hidden

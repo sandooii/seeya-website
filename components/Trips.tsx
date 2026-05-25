@@ -173,7 +173,7 @@ function TripCard({ trip, onOpen }: { trip: Trip; onOpen: () => void }) {
         </div>
       )}
 
-      {/* Status overlay — sold-out */}
+      {/* Status overlay — sold-out (stamp style) */}
       {trip.status === "sold-out" && (
         <div
           className="absolute inset-0 z-20 grid place-items-center pointer-events-none"
@@ -181,14 +181,36 @@ function TripCard({ trip, onOpen }: { trip: Trip; onOpen: () => void }) {
         >
           <div
             className="absolute inset-0"
-            style={{ backgroundColor: "rgba(0,0,0,0.55)" }}
+            style={{ backgroundColor: "rgba(0,0,0,0.45)" }}
           />
-          <span
-            className="relative text-white text-2xl md:text-3xl italic font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
-            style={{ fontFamily: "var(--font-playfair)" }}
+          <div
+            className="relative -rotate-[14deg]"
+            style={{
+              filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.45))",
+            }}
+            dir="ltr"
           >
-            Sold Out
-          </span>
+            <div
+              className="px-6 py-2 md:px-8 md:py-3 rounded-md"
+              style={{
+                border: "4px double #ff5a4a",
+                outline: "2px solid rgba(255,90,74,0.55)",
+                outlineOffset: "4px",
+                backgroundColor: "rgba(255,90,74,0.08)",
+              }}
+            >
+              <span
+                className="block text-3xl md:text-4xl font-black uppercase tracking-[0.18em]"
+                style={{
+                  color: "#ff5a4a",
+                  fontFamily: "var(--font-playfair)",
+                  textShadow: "0 1px 0 rgba(255,255,255,0.05)",
+                }}
+              >
+                Sold Out
+              </span>
+            </div>
+          </div>
         </div>
       )}
 
@@ -219,6 +241,43 @@ function TripCard({ trip, onOpen }: { trip: Trip; onOpen: () => void }) {
 
   if (clickable) {
     const isSoldOut = trip.status === "sold-out";
+
+    // Sold-out cards: two clickable regions —
+    // 1) image area opens TripModal (details + itinerary)
+    // 2) waitlist button opens WaitlistFormModal directly
+    if (isSoldOut) {
+      const wrapperClasses = `group relative overflow-hidden rounded-3xl bg-ink text-white text-right min-h-[300px] flex flex-col`;
+      return (
+        <div data-gsap="trip-card" className={wrapperClasses}>
+          <button
+            type="button"
+            onClick={onOpen}
+            aria-label={`عرض تفاصيل رحلة ${trip.name}`}
+            className="block cursor-pointer focus:outline-none focus-visible:ring-4 focus-visible:ring-coral/40 ring-offset-2"
+          >
+            {imageArea}
+          </button>
+          <div className="flex-1 bg-white text-ink p-5 md:p-7 flex flex-col gap-4">
+            {infoRow}
+            <WaitlistFormModal
+              tripSlug={trip.id}
+              tripName={trip.name}
+              triggerLabel="🔔 سجّليني بقائمة الانتظار"
+              triggerClassName="inline-flex w-full items-center justify-center gap-2 px-5 py-3 rounded-full text-white text-sm md:text-base font-bold bg-coral transition-all hover:brightness-110 hover:gap-3 shadow-[0_6px_20px_-6px_rgba(255,90,74,0.55)]"
+            />
+            <button
+              type="button"
+              onClick={onOpen}
+              className="inline-flex items-center justify-center gap-1.5 text-ink/55 hover:text-coral text-xs font-medium transition-colors"
+            >
+              عرض تفاصيل الرحلة
+              <span>←</span>
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <button
         type="button"
@@ -227,11 +286,11 @@ function TripCard({ trip, onOpen }: { trip: Trip; onOpen: () => void }) {
         className={cardClasses}
       >
         {imageArea}
-        <div className="bg-white text-ink p-5 md:p-7 flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex-1 bg-white text-ink p-5 md:p-7 flex items-center justify-between gap-4 flex-wrap">
           {infoRow}
           <span className="inline-flex items-center gap-2 text-coral font-bold text-sm group-hover:gap-3 transition-all">
             <MapPin size={16} />
-            {isSoldOut ? "قائمة الانتظار" : "التفاصيل"}
+            التفاصيل
             <span className="transition-transform group-hover:-translate-x-1">
               ←
             </span>
@@ -245,7 +304,7 @@ function TripCard({ trip, onOpen }: { trip: Trip; onOpen: () => void }) {
   return (
     <article data-gsap="trip-card" className={cardClasses}>
       {imageArea}
-      <div className="bg-white text-ink p-5 md:p-7 flex flex-col gap-4">
+      <div className="flex-1 bg-white text-ink p-5 md:p-7 flex flex-col gap-4">
         {infoRow}
         {trip.status === "soon" && (
           <WaitlistFormModal
