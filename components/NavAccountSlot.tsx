@@ -2,12 +2,14 @@
  * Server-rendered slot that the Navbar drops into its toolbar.
  * Checks the auth state and renders one of:
  *   - "تسجيل دخول" → /login            (logged out)
- *   - First name   → /account          (logged-in client)
+ *   - <AccountMenu>                    (logged-in client — dropdown
+ *                                        with حسابي + تسجيل خروج)
  *   - "اللوحة"     → /admin            (logged-in admin)
  */
 import Link from "next/link";
-import { LogIn, User, ShieldCheck } from "lucide-react";
+import { LogIn, ShieldCheck } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import AccountMenu from "./AccountMenu";
 
 const PILL_CLASSES =
   "inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold backdrop-blur-md transition-colors";
@@ -61,10 +63,5 @@ export default async function NavAccountSlot({
   const firstName =
     (profile?.full_name ?? "").trim().split(" ")[0] || "حسابي";
 
-  return (
-    <Link href="/account" className={pill}>
-      <User size={14} className="shrink-0" />
-      <span className="max-w-[110px] truncate">{firstName}</span>
-    </Link>
-  );
+  return <AccountMenu firstName={firstName} variant={dark ? "dark" : "light"} />;
 }

@@ -142,10 +142,12 @@ export default function Navbar({
                 </li>
               ))}
               {accountSlotDark && (
-                <li
-                  className="pt-3 border-t border-ink/10"
-                  onClick={() => setOpen(false)}
-                >
+                <li className="pt-3 border-t border-ink/10">
+                  {/* No onClick here — when the account slot is the
+                      <AccountMenu /> dropdown, we don't want this li's
+                      click to close the navbar drawer before the user
+                      sees the menu. Navigation via the menu's Link
+                      auto-closes the drawer via the pathname effect. */}
                   {accountSlotDark}
                 </li>
               )}
