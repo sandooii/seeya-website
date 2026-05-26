@@ -74,14 +74,29 @@ export default function AccountSidebar({
             My account
           </span>
         </Link>
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          aria-label="فتح القائمة"
-          className="w-10 h-10 grid place-items-center rounded-xl text-ink/70 hover:bg-ink/5"
-        >
-          <Menu size={22} />
-        </button>
+        <div className="flex items-center gap-1.5">
+          {/* Quick logout — visible without opening the drawer so portrait
+              clients on small phones don't have to dig through the slide-out
+              panel to find it. */}
+          <form action="/account/logout" method="post">
+            <button
+              type="submit"
+              aria-label="تسجيل الخروج"
+              className="inline-flex items-center gap-1.5 px-3 h-10 rounded-xl text-coral hover:bg-coral/10 text-sm font-bold transition-colors"
+            >
+              <LogOut size={16} />
+              <span>خروج</span>
+            </button>
+          </form>
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            aria-label="فتح القائمة"
+            className="w-10 h-10 grid place-items-center rounded-xl text-ink/70 hover:bg-ink/5"
+          >
+            <Menu size={22} />
+          </button>
+        </div>
       </header>
 
       {open && (
@@ -96,7 +111,7 @@ export default function AccountSidebar({
         dir="rtl"
         className={`
           fixed md:sticky inset-y-0 right-0 top-0 z-50 md:z-auto
-          w-72 md:w-64 shrink-0 h-screen flex flex-col bg-white
+          w-72 md:w-64 shrink-0 h-[100dvh] md:h-screen flex flex-col bg-white
           border-l border-ink/8
           transition-transform duration-300
           ${open ? "translate-x-0" : "translate-x-full"}

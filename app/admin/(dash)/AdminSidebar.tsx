@@ -104,7 +104,7 @@ export default function AdminSidebar({
         dir="rtl"
         className={`
           fixed md:sticky inset-y-0 right-0 top-0 z-50 md:z-auto
-          w-72 md:w-64 shrink-0 h-screen flex flex-col bg-white
+          w-72 md:w-64 shrink-0 h-[100dvh] md:h-screen flex flex-col bg-white
           border-l border-ink/8 md:border-l-0 md:border-l md:border-ink/8
           transition-transform duration-300
           ${open ? "translate-x-0" : "translate-x-full"}
