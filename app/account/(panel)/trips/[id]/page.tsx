@@ -15,7 +15,6 @@ import {
   MapPin,
   Phone,
   ExternalLink,
-  Sparkles,
   ListChecks,
 } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -135,7 +134,7 @@ export default async function MyTripDetailPage({
         <span>كل رحلاتي</span>
       </Link>
 
-      {/* Hero */}
+      {/* Hero — image + title only (countdown moved to its own card below) */}
       <section className="relative overflow-hidden rounded-3xl text-white aspect-[16/9] md:aspect-[21/9]">
         <Image
           src={trip.image_url}
@@ -145,9 +144,9 @@ export default async function MyTripDetailPage({
           className="object-cover"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-l from-black/80 via-black/30 to-black/50" />
+        <div className="absolute inset-0 bg-gradient-to-l from-black/70 via-black/25 to-black/45" />
         <div className="absolute inset-0 p-6 md:p-10 flex flex-col justify-between">
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
             <span
               className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${bookingStatusColor[booking.status]}`}
             >
@@ -158,21 +157,21 @@ export default async function MyTripDetailPage({
             </span>
           </div>
 
-          <div className="flex items-end justify-between gap-4 flex-wrap">
-            <div>
-              <h1 className="text-3xl md:text-5xl font-black drop-shadow-lg">
-                {trip.name}
-              </h1>
-              <p className="text-white/85 text-sm mt-1 tabular-nums">
-                <bdi>{trip.month}</bdi> · <bdi>{trip.duration}</bdi>
-              </p>
-            </div>
-            {departureMs !== null && daysUntil !== null && daysUntil >= 0 && (
-              <LiveCountdown targetMs={departureMs} />
-            )}
+          <div className="text-right">
+            <h1 className="text-3xl md:text-5xl font-black drop-shadow-lg">
+              {trip.name}
+            </h1>
+            <p className="text-white/85 text-sm mt-1 tabular-nums">
+              <bdi>{trip.month}</bdi> · <bdi>{trip.duration}</bdi>
+            </p>
           </div>
         </div>
       </section>
+
+      {/* Countdown — its own card so it has room to breathe */}
+      {departureMs !== null && daysUntil !== null && daysUntil >= 0 && (
+        <LiveCountdown targetMs={departureMs} variant="light" />
+      )}
 
       {/* Payment progress */}
       <section className="bg-white rounded-3xl border border-ink/5 p-6">
@@ -339,26 +338,11 @@ export default async function MyTripDetailPage({
         </CompanionSection>
       )}
 
-      {/* What's included */}
-      {trip.includes && trip.includes.length > 0 && (
-        <CompanionSection
-          title="ما تشمله الرحلة"
-          icon={<Sparkles size={18} />}
-          accent="coral"
-        >
-          <ul className="space-y-1.5">
-            {trip.includes.map((it, i) => (
-              <li
-                key={i}
-                className="flex items-start gap-2 text-sm text-ink/80"
-              >
-                <span className="text-coral mt-1">✓</span>
-                <span>{it}</span>
-              </li>
-            ))}
-          </ul>
-        </CompanionSection>
-      )}
+      {/* The "ما تشمله الرحلة" section is intentionally NOT rendered
+          on the client portal — booked clients already received the
+          inclusions list before paying. Keeping it here just clutters
+          the personal trip companion. The data is still available to
+          admin via the trip edit form. */}
 
       {/* Restaurants */}
       {companion.restaurants && companion.restaurants.length > 0 && (
@@ -523,34 +507,43 @@ function CompanionSection({
 function FlightCard({ flight }: { flight: FlightInfo }) {
   return (
     <div className="space-y-4">
-      {/* Route */}
+      {/* Route — TLV → ✈ → HKT, aligned to the visual right within RTL
+          page flow. Inner row stays LTR so the airport order reads
+          'departure → arrival' the way pilots read it; the outer
+          flex `justify-start` pins the whole block to the start of
+          the row, which in this RTL context is the visual right. */}
       {(flight.departure_airport || flight.arrival_airport) && (
-        <div className="flex items-center gap-3 flex-wrap" dir="ltr">
-          {flight.departure_airport && (
-            <div className="text-center">
-              <div className="text-3xl font-black text-ink tabular-nums uppercase tracking-wider">
-                {flight.departure_airport}
-              </div>
-              {flight.departure_airport_name && (
-                <div className="text-xs text-ink/55">
-                  {flight.departure_airport_name}
+        <div className="flex justify-start">
+          <div
+            className="inline-flex items-center gap-3 flex-wrap"
+            dir="ltr"
+          >
+            {flight.departure_airport && (
+              <div className="text-center">
+                <div className="text-3xl font-black text-ink tabular-nums uppercase tracking-wider">
+                  {flight.departure_airport}
                 </div>
-              )}
-            </div>
-          )}
-          <Plane className="text-coral" size={22} />
-          {flight.arrival_airport && (
-            <div className="text-center">
-              <div className="text-3xl font-black text-ink tabular-nums uppercase tracking-wider">
-                {flight.arrival_airport}
+                {flight.departure_airport_name && (
+                  <div className="text-xs text-ink/55">
+                    {flight.departure_airport_name}
+                  </div>
+                )}
               </div>
-              {flight.arrival_airport_name && (
-                <div className="text-xs text-ink/55">
-                  {flight.arrival_airport_name}
+            )}
+            <Plane className="text-coral" size={22} />
+            {flight.arrival_airport && (
+              <div className="text-center">
+                <div className="text-3xl font-black text-ink tabular-nums uppercase tracking-wider">
+                  {flight.arrival_airport}
                 </div>
-              )}
-            </div>
-          )}
+                {flight.arrival_airport_name && (
+                  <div className="text-xs text-ink/55">
+                    {flight.arrival_airport_name}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -591,7 +584,7 @@ function FlightCard({ flight }: { flight: FlightInfo }) {
               <AlertTriangle size={18} />
             </span>
             <div className="space-y-1">
-              <div className="text-[11px] font-black uppercase tracking-[0.2em] text-amber-700">
+              <div className="text-xs font-black text-amber-700">
                 تذكير مهم
               </div>
               <p className="text-sm md:text-base font-bold text-amber-900 leading-relaxed">
@@ -730,9 +723,7 @@ function Pill({
 }) {
   return (
     <div className="bg-ink/3 rounded-xl px-3 py-2 text-right">
-      <div className="text-[10px] font-bold text-ink/50 uppercase tracking-wider">
-        {label}
-      </div>
+      <div className="text-xs font-semibold text-ink/55">{label}</div>
       <div className="font-bold text-ink mt-0.5 tabular-nums">
         {ltrValue ? <bdi>{value}</bdi> : value}
       </div>

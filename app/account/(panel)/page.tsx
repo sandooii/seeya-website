@@ -243,8 +243,8 @@ function FeaturedBookingCard({ booking }: { booking: BookingWithTrip }) {
 
   return (
     <article className="bg-white rounded-3xl border border-ink/5 overflow-hidden shadow-sm">
-      {/* Hero with image + countdown overlay */}
-      <div className="relative aspect-[21/9] md:aspect-[24/9] text-white">
+      {/* Hero: image + title only (countdown moved out so it can breathe) */}
+      <div className="relative aspect-[16/9] md:aspect-[21/9] text-white">
         <Image
           src={trip.image_url}
           alt={trip.name}
@@ -253,30 +253,35 @@ function FeaturedBookingCard({ booking }: { booking: BookingWithTrip }) {
           className="object-cover"
           sizes="(min-width: 768px) 80vw, 100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-l from-black/75 via-black/35 to-black/55" />
+        <div className="absolute inset-0 bg-gradient-to-l from-black/70 via-black/25 to-black/40" />
 
         <div className="absolute inset-0 p-5 md:p-8 flex flex-col justify-between">
-          {/* Top-left badge */}
-          <div className="flex justify-start">
+          {/* Top: badge — aligned to visual right in RTL */}
+          <div className="flex justify-end">
             <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur px-3 py-1 rounded-full text-[11px] font-bold border border-white/30">
               ✦ رحلتك القادمة
             </span>
           </div>
 
-          {/* Bottom: title + countdown (responsive: stacked on mobile, row on desktop) */}
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-            <div>
-              <h2 className="text-2xl md:text-4xl font-black drop-shadow-lg leading-tight">
-                {trip.name}
-              </h2>
-              <p className="text-white/90 text-xs md:text-sm mt-1 tabular-nums">
-                <bdi>{trip.month}</bdi> · <bdi>{trip.duration}</bdi>
-              </p>
-            </div>
-            {departureMs !== null && <LiveCountdown targetMs={departureMs} />}
+          {/* Bottom: title + dates only */}
+          <div className="text-right">
+            <h2 className="text-2xl md:text-4xl font-black drop-shadow-lg leading-tight">
+              {trip.name}
+            </h2>
+            <p className="text-white/90 text-xs md:text-sm mt-1 tabular-nums">
+              <bdi>{trip.month}</bdi> · <bdi>{trip.duration}</bdi>
+            </p>
           </div>
         </div>
       </div>
+
+      {/* Countdown — its own dedicated card under the hero so it doesn't
+          fight the trip title for space inside the image overlay. */}
+      {departureMs !== null && (
+        <div className="px-5 md:px-6 pt-5 md:pt-6">
+          <LiveCountdown targetMs={departureMs} variant="light" />
+        </div>
+      )}
 
       {/* Body: smart payment + actions */}
       <div className="p-5 md:p-6 space-y-5">
