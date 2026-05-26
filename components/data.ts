@@ -44,7 +44,9 @@ export type Trip = {
 export function formatPrice(trip: Trip): string | null {
   if (trip.price <= 0) return null;
   const num = trip.price.toLocaleString("en-US");
-  return trip.currency === "₪" ? `${num} ₪` : `$${num}`;
+  // Currency symbol always trails the number for consistency with the
+  // shekel layout — see lib/bookings.formatBookingPrice for the same rule.
+  return trip.currency === "₪" ? `${num} ₪` : `${num} $`;
 }
 
 // NOTE: trips data lives in Supabase now.

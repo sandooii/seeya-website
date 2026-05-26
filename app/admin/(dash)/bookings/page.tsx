@@ -204,9 +204,7 @@ export default async function BookingsAdminPage({
                 <th className="px-4 py-3 font-bold">الحالة</th>
                 <th className="px-4 py-3 font-bold">الدفع</th>
                 <th className="px-4 py-3 font-bold">التاريخ</th>
-                <th className="px-4 py-3 font-bold text-center w-32">
-                  إجراءات
-                </th>
+                <th className="px-4 py-3 font-bold w-32">إجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-ink/5">
@@ -414,7 +412,7 @@ function RevenueStatCard({
                   : "text-2xl md:text-3xl font-black text-coral"
               }`}
             >
-              <bdi>${revenueUSD.toLocaleString("en-US")}</bdi>
+              <bdi>{revenueUSD.toLocaleString("en-US")} $</bdi>
             </div>
           )}
         </div>

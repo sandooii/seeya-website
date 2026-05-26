@@ -115,9 +115,12 @@ export default async function MyTripDetailPage({
   const pct = paymentProgress(booking);
   const remaining = remainingAmount(booking);
   const pdfUrl = getTripPdfUrl(trip.pdf_path, trip.updated_at);
+  // Personalized countdown — booking.flight_override.outbound wins
+  // over the trip's shared companion flight when set.
   const departureMs = tripDepartureMs({
     startDate: trip.start_date,
     companion,
+    flightOverride: booking.flight_override?.outbound,
   });
 
   const waMessage = `أهلاً يا SeeYa، أنا حاجز${"ة"} رحلة ${trip.name} وعندي سؤال`;

@@ -7,7 +7,9 @@ import { faqs } from "./data";
 import { waLink } from "@/lib/contact";
 
 export default function FAQ() {
-  const [open, setOpen] = useState<number | null>(0);
+  // Start with all items collapsed — opening the first one by default
+  // hid the rest from the visitor's first glance.
+  const [open, setOpen] = useState<number | null>(null);
 
   return (
     <section id="faq" className="relative py-24 md:py-32 bg-white overflow-hidden">

@@ -26,7 +26,9 @@ const statusColor: Record<TripStatusDB, string> = {
 function formatPrice(price: number, currency: CurrencyCode | null): string {
   if (price <= 0) return "—";
   const num = price.toLocaleString("en-US");
-  return currency === "USD" ? `$${num}` : `${num} ₪`;
+  // Currency symbol always trails the number — mirrors formatBookingPrice
+  // so the admin and account screens look the same.
+  return currency === "USD" ? `${num} $` : `${num} ₪`;
 }
 
 export default async function TripsAdminPage() {

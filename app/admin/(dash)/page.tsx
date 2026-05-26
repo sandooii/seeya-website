@@ -204,9 +204,10 @@ export default async function AdminDashboardPage() {
                 >
                   <Icon size={20} />
                 </div>
-                <span className="text-ink/30 text-sm group-hover:text-coral transition-colors">
-                  →
-                </span>
+                <ArrowLeft
+                  size={14}
+                  className="text-ink/30 group-hover:text-coral transition-colors"
+                />
               </div>
               <div className="text-3xl font-black text-ink tabular-nums text-right">
                 {stat.value}
@@ -259,7 +260,7 @@ export default async function AdminDashboardPage() {
           <div className="flex flex-wrap items-end justify-start gap-x-4 gap-y-1">
             {revenueUSD > 0 && (
               <bdi className="text-3xl font-black text-emerald-600 tabular-nums">
-                ${revenueUSD.toLocaleString("en-US")}
+                {revenueUSD.toLocaleString("en-US")} $
               </bdi>
             )}
             {revenueILS > 0 && (
@@ -306,7 +307,7 @@ export default async function AdminDashboardPage() {
                       ? `${revenueILS7d.toLocaleString("en-US")} ₪`
                       : null,
                     revenueUSD7d > 0
-                      ? `$${revenueUSD7d.toLocaleString("en-US")}`
+                      ? `${revenueUSD7d.toLocaleString("en-US")} $`
                       : null,
                   ]
                     .filter(Boolean)

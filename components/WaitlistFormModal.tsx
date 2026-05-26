@@ -172,7 +172,11 @@ export default function WaitlistFormModal({
                   </Field>
 
                   {state.ok === false && state.error && (
-                    <div className="rounded-xl px-4 py-3 text-sm bg-red-50 text-red-700 border border-red-200">
+                    <div
+                      role="alert"
+                      aria-live="polite"
+                      className="rounded-xl px-4 py-3 text-sm bg-red-50 text-red-700 border border-red-200"
+                    >
                       {state.error}
                     </div>
                   )}

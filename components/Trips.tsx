@@ -148,10 +148,7 @@ function TripCard({ trip, onOpen }: { trip: Trip; onOpen: () => void }) {
             className="absolute inset-0"
             style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
           />
-          <span
-            className="relative text-white text-2xl italic font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
-            style={{ fontFamily: "var(--font-playfair)" }}
-          >
+          <span className="relative text-white text-2xl font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
             انتهت الرحلة
           </span>
         </div>

@@ -53,7 +53,11 @@ export function paymentProgress(b: Pick<BookingRow, "total_amount" | "paid_amoun
 /** Format a price with its currency for display. */
 export function formatBookingPrice(amount: number, currency: CurrencyCode): string {
   const num = Number(amount).toLocaleString("en-US");
-  return currency === "USD" ? `$${num}` : `${num} ₪`;
+  // Currency symbol always trails the number — keeps the layout
+  // consistent for clients used to reading "1,000 ₪". USD bookings
+  // follow the same convention so the two never read differently
+  // side-by-side.
+  return currency === "USD" ? `${num} $` : `${num} ₪`;
 }
 
 /** Arabic label for each booking status. */

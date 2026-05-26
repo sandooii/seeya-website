@@ -81,7 +81,7 @@ export default function Navbar({
                 } group`}
               >
                 {l.label}
-                <span className="absolute -bottom-1.5 right-0 left-auto h-0.5 w-0 bg-coral transition-all duration-300 group-hover:w-full" />
+                <span className="absolute -bottom-1.5 left-0 right-auto h-0.5 w-0 bg-coral transition-all duration-300 group-hover:w-full" />
               </a>
             </li>
           ))}

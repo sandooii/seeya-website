@@ -374,7 +374,7 @@ function ThailandBody({
             download={`SeeYa-${trip.id}.pdf`}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full inline-flex items-center justify-center gap-2 rounded-full py-3 font-bold border bg-transparent transition-colors hover:bg-coral hover:text-white"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-full py-3 font-bold border bg-transparent transition-colors hover:bg-coral hover:text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-coral/40"
             style={{
               borderColor: "#F95C6B",
               borderWidth: "1px",
@@ -392,7 +392,7 @@ function ThailandBody({
           download="SeeYa-Cancellation-Policy.pdf"
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-full text-sm font-medium border border-ink/15 text-ink/60 hover:border-coral/40 hover:text-coral transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-full text-sm font-medium border border-ink/15 text-ink/60 hover:border-coral/40 hover:text-coral transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-coral/40"
         >
           سياسة الإلغاء PDF ↓
         </a>

@@ -233,9 +233,12 @@ export default async function AccountHomePage({
 function FeaturedBookingCard({ booking }: { booking: BookingWithTrip }) {
   const trip = booking.trip!;
   const pdfUrl = getTripPdfUrl(trip.pdf_path, trip.updated_at);
+  // Personalized countdown — uses the booking's per-flight override
+  // when set so each client sees HER departure time, not the group's.
   const departureMs = tripDepartureMs({
     startDate: trip.start_date,
     companion: trip.companion_content,
+    flightOverride: booking.flight_override?.outbound,
   });
 
   return (
