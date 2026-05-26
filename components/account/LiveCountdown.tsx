@@ -35,9 +35,12 @@ function computeTick(target: number): Tick {
 export default function LiveCountdown({
   targetMs,
   variant = "dark",
+  compact = false,
 }: {
   targetMs: number;
   variant?: Variant;
+  /** Compact mode shrinks padding + digit size for tight hero placements. */
+  compact?: boolean;
 }) {
   const [tick, setTick] = useState<Tick>(() => computeTick(targetMs));
 
@@ -66,13 +69,22 @@ export default function LiveCountdown({
           separator: "text-white/40",
         };
 
+  const padding = compact ? "px-3 py-2.5 md:px-5 md:py-4" : "px-5 py-4";
+  const digitSize = compact
+    ? "text-2xl md:text-4xl"
+    : "text-3xl md:text-4xl";
+  const sepSize = compact ? "text-xl md:text-3xl" : "text-2xl md:text-3xl";
+  const labelSize = compact ? "text-[9px] md:text-xs" : "text-[10px] md:text-xs";
+  const taglineSize = compact ? "text-[10px] md:text-xs" : "text-xs";
+  const taglineMt = compact ? "mt-1.5 md:mt-2" : "mt-2";
+
   if (tick.gone) {
     return (
-      <div className={`text-center rounded-2xl px-6 py-4 ${styles.wrapper}`}>
-        <div className={`text-3xl md:text-4xl font-black leading-none ${styles.digit}`}>
+      <div className={`text-center rounded-2xl ${padding} ${styles.wrapper}`}>
+        <div className={`${digitSize} font-black leading-none ${styles.digit}`}>
           سفرك اليوم 🎉
         </div>
-        <div className={`text-xs mt-1 ${styles.tagline}`}>
+        <div className={`${taglineSize} mt-1 ${styles.tagline}`}>
           أتمنالك رحلة لا تنسى
         </div>
       </div>
@@ -80,20 +92,48 @@ export default function LiveCountdown({
   }
 
   return (
-    <div className={`rounded-2xl px-5 py-4 ${styles.wrapper}`}>
+    <div className={`rounded-2xl ${padding} ${styles.wrapper}`}>
       <div
-        className="flex items-baseline gap-2 md:gap-3 justify-center tabular-nums"
+        className="flex items-baseline gap-1.5 md:gap-3 justify-center tabular-nums"
         dir="ltr"
       >
-        <Cell value={tick.d} label="أيام" styles={styles} />
-        <Separator styles={styles} />
-        <Cell value={tick.h} label="ساعة" pad styles={styles} />
-        <Separator styles={styles} />
-        <Cell value={tick.m} label="دقيقة" pad styles={styles} />
-        <Separator styles={styles} />
-        <Cell value={tick.s} label="ثانية" pad highlight styles={styles} />
+        <Cell
+          value={tick.d}
+          label="أيام"
+          styles={styles}
+          digitSize={digitSize}
+          labelSize={labelSize}
+        />
+        <Separator styles={styles} sepSize={sepSize} />
+        <Cell
+          value={tick.h}
+          label="ساعة"
+          pad
+          styles={styles}
+          digitSize={digitSize}
+          labelSize={labelSize}
+        />
+        <Separator styles={styles} sepSize={sepSize} />
+        <Cell
+          value={tick.m}
+          label="دقيقة"
+          pad
+          styles={styles}
+          digitSize={digitSize}
+          labelSize={labelSize}
+        />
+        <Separator styles={styles} sepSize={sepSize} />
+        <Cell
+          value={tick.s}
+          label="ثانية"
+          pad
+          highlight
+          styles={styles}
+          digitSize={digitSize}
+          labelSize={labelSize}
+        />
       </div>
-      <div className={`text-xs mt-2 text-center ${styles.tagline}`}>
+      <div className={`${taglineSize} ${taglineMt} text-center ${styles.tagline}`}>
         على سفرك ✈️
       </div>
     </div>
@@ -115,25 +155,29 @@ function Cell({
   pad,
   highlight,
   styles,
+  digitSize,
+  labelSize,
 }: {
   value: number;
   label: string;
   pad?: boolean;
   highlight?: boolean;
   styles: Styles;
+  digitSize: string;
+  labelSize: string;
 }) {
   const text = pad ? String(value).padStart(2, "0") : String(value);
   return (
     <div className="flex flex-col items-center">
       <span
-        className={`text-3xl md:text-4xl font-black leading-none ${
+        className={`${digitSize} font-black leading-none ${
           highlight ? styles.highlight : styles.digit
         }`}
       >
         {text}
       </span>
       <span
-        className={`text-[10px] md:text-xs mt-1 font-semibold ${styles.label}`}
+        className={`${labelSize} mt-1 font-semibold ${styles.label}`}
         dir="rtl"
       >
         {label}
@@ -142,10 +186,16 @@ function Cell({
   );
 }
 
-function Separator({ styles }: { styles: Styles }) {
+function Separator({
+  styles,
+  sepSize,
+}: {
+  styles: Styles;
+  sepSize: string;
+}) {
   return (
     <span
-      className={`text-2xl md:text-3xl font-black leading-none self-start mt-1 ${styles.separator}`}
+      className={`${sepSize} font-black leading-none self-start mt-1 ${styles.separator}`}
     >
       :
     </span>

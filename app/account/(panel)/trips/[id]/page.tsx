@@ -134,10 +134,9 @@ export default async function MyTripDetailPage({
         <span>كل رحلاتي</span>
       </Link>
 
-      {/* Hero — image with badge (top), title + countdown (centered stack
-          near the bottom). Centered stack keeps everything visually balanced
-          on both phone and desktop. */}
-      <section className="relative overflow-hidden rounded-3xl text-white aspect-[4/5] sm:aspect-[16/10] md:aspect-[21/10]">
+      {/* Hero — shorter aspect on mobile so the badge + title + countdown
+          stack stays compact instead of eating the whole viewport. */}
+      <section className="relative overflow-hidden rounded-3xl text-white aspect-[5/4] sm:aspect-[16/10] md:aspect-[21/10]">
         <Image
           src={trip.image_url}
           alt={trip.name}
@@ -147,7 +146,7 @@ export default async function MyTripDetailPage({
           sizes="100vw"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/45 to-black/75" />
-        <div className="absolute inset-0 p-6 md:p-10 flex flex-col">
+        <div className="absolute inset-0 p-4 md:p-10 flex flex-col">
           <div className="flex items-center gap-2 flex-wrap">
             <span
               className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${bookingStatusColor[booking.status]}`}
@@ -162,17 +161,17 @@ export default async function MyTripDetailPage({
           <div className="flex-1" />
 
           <div className="text-center">
-            <h1 className="text-3xl md:text-5xl font-black drop-shadow-lg leading-tight">
+            <h1 className="text-2xl md:text-5xl font-black drop-shadow-lg leading-tight">
               {trip.name}
             </h1>
-            <p className="text-white/85 text-sm mt-1 tabular-nums">
+            <p className="text-white/85 text-[11px] md:text-sm mt-0.5 md:mt-1 tabular-nums">
               <bdi>{trip.month}</bdi> · <bdi>{trip.duration}</bdi>
             </p>
           </div>
 
           {departureMs !== null && daysUntil !== null && daysUntil >= 0 && (
-            <div className="mt-4 md:mt-5 mx-auto w-full max-w-md">
-              <LiveCountdown targetMs={departureMs} variant="dark" />
+            <div className="mt-3 md:mt-5 mx-auto w-full max-w-md">
+              <LiveCountdown targetMs={departureMs} variant="dark" compact />
             </div>
           )}
         </div>

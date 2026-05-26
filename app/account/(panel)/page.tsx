@@ -243,10 +243,10 @@ function FeaturedBookingCard({ booking }: { booking: BookingWithTrip }) {
 
   return (
     <article className="bg-white rounded-3xl border border-ink/5 overflow-hidden shadow-sm">
-      {/* Hero: image with badge (top), title (middle), countdown (bottom).
-          Everything centered horizontally so the title and ticker share a
-          balanced vertical column instead of competing on the same row. */}
-      <div className="relative aspect-[4/5] sm:aspect-[16/10] md:aspect-[21/10] text-white">
+      {/* Hero: image with badge (top), title + countdown (centered stack
+          near the bottom). Shorter aspect ratio so the hero doesn't eat
+          the whole viewport on mobile. */}
+      <div className="relative aspect-[5/4] sm:aspect-[16/10] md:aspect-[21/10] text-white">
         <Image
           src={trip.image_url}
           alt={trip.name}
@@ -257,7 +257,7 @@ function FeaturedBookingCard({ booking }: { booking: BookingWithTrip }) {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/45 to-black/75" />
 
-        <div className="absolute inset-0 p-5 md:p-8 flex flex-col">
+        <div className="absolute inset-0 p-4 md:p-8 flex flex-col">
           {/* Top: badge aligned to the visual right (RTL start) */}
           <div className="flex justify-start">
             <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur px-3 py-1 rounded-full text-[11px] font-bold border border-white/30">
@@ -270,18 +270,18 @@ function FeaturedBookingCard({ booking }: { booking: BookingWithTrip }) {
 
           {/* Title + dates */}
           <div className="text-center">
-            <h2 className="text-2xl md:text-4xl font-black drop-shadow-lg leading-tight">
+            <h2 className="text-xl md:text-4xl font-black drop-shadow-lg leading-tight">
               {trip.name}
             </h2>
-            <p className="text-white/90 text-xs md:text-sm mt-1 tabular-nums">
+            <p className="text-white/90 text-[11px] md:text-sm mt-0.5 md:mt-1 tabular-nums">
               <bdi>{trip.month}</bdi> · <bdi>{trip.duration}</bdi>
             </p>
           </div>
 
-          {/* Countdown sits underneath, centered with breathing room */}
+          {/* Countdown sits underneath, compact on mobile to keep the hero short */}
           {departureMs !== null && (
-            <div className="mt-4 md:mt-5 mx-auto w-full max-w-md">
-              <LiveCountdown targetMs={departureMs} variant="dark" />
+            <div className="mt-3 md:mt-5 mx-auto w-full max-w-md">
+              <LiveCountdown targetMs={departureMs} variant="dark" compact />
             </div>
           )}
         </div>
