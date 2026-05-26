@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import type { Trip } from "./data";
+import { tripDepartureMs } from "@/lib/trips";
 
 /**
  * Fallback used only if the trip row is missing or has no start_date.
@@ -237,12 +238,16 @@ export default function Countdown({ trip }: { trip: Trip | null }) {
   const booked = Math.max(0, totalSeats - available);
   const isSoldOut = trip?.status === "sold-out" || available === 0;
 
-  // Derive the countdown TARGET from the trip's start_date so the
-  // countdown can never disagree with the actual booking dates.
-  // Falls back to the hardcoded date only when the trip row is absent.
-  const target = trip?.startDate
-    ? new Date(`${trip.startDate}T00:00:00`).getTime()
-    : FALLBACK_TARGET;
+  // Derive the countdown TARGET from the trip's flight departure
+  // moment (start_date + companion outbound time). Falls back to the
+  // hardcoded date only when the trip row is absent. Computed via the
+  // shared helper so the public countdown and the client-account
+  // countdown can never disagree.
+  const target =
+    tripDepartureMs({
+      startDate: trip?.startDate ?? null,
+      companion: trip?.companion ?? null,
+    }) ?? FALLBACK_TARGET;
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- diff() depends on Date.now() and cannot run during render; mount-only setup is intentional

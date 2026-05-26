@@ -39,6 +39,7 @@ import {
 import { getTripPdfUrl } from "@/lib/pdfs";
 import { waLink } from "@/lib/contact";
 import LiveCountdown from "@/components/account/LiveCountdown";
+import { tripDepartureMs } from "@/lib/trips";
 
 export const metadata = { title: "دليل رحلتي — SeeYa" };
 
@@ -114,6 +115,10 @@ export default async function MyTripDetailPage({
   const pct = paymentProgress(booking);
   const remaining = remainingAmount(booking);
   const pdfUrl = getTripPdfUrl(trip.pdf_path, trip.updated_at);
+  const departureMs = tripDepartureMs({
+    startDate: trip.start_date,
+    companion,
+  });
 
   const waMessage = `أهلاً يا SeeYa، أنا حاجز${"ة"} رحلة ${trip.name} وعندي سؤال`;
 
@@ -159,8 +164,8 @@ export default async function MyTripDetailPage({
                 <bdi>{trip.month}</bdi> · <bdi>{trip.duration}</bdi>
               </p>
             </div>
-            {trip.start_date && daysUntil !== null && daysUntil >= 0 && (
-              <LiveCountdown startsAtIso={trip.start_date} />
+            {departureMs !== null && daysUntil !== null && daysUntil >= 0 && (
+              <LiveCountdown targetMs={departureMs} />
             )}
           </div>
         </div>

@@ -21,18 +21,18 @@ function computeTick(target: number): Tick {
 }
 
 /**
- * Live ticking countdown to a trip's start date — replaces the
- * static "X days" label on the account dashboard. Updates every
- * second on the client so the seconds visibly count down.
+ * Live ticking countdown to a trip's departure moment. The parent
+ * computes the target via `tripDepartureMs()` (start_date + flight
+ * departure_time) so every page sharing the same trip ticks to the
+ * same second.
  */
-export default function LiveCountdown({ startsAtIso }: { startsAtIso: string }) {
-  const target = new Date(startsAtIso).getTime();
-  const [tick, setTick] = useState<Tick>(() => computeTick(target));
+export default function LiveCountdown({ targetMs }: { targetMs: number }) {
+  const [tick, setTick] = useState<Tick>(() => computeTick(targetMs));
 
   useEffect(() => {
-    const id = setInterval(() => setTick(computeTick(target)), 1000);
+    const id = setInterval(() => setTick(computeTick(targetMs)), 1000);
     return () => clearInterval(id);
-  }, [target]);
+  }, [targetMs]);
 
   if (tick.gone) {
     return (

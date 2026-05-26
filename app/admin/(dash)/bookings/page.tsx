@@ -125,10 +125,9 @@ export default async function BookingsAdminPage({
           value={(stats.depositPaid + stats.paidFull).toString()}
           accent="emerald"
         />
-        <StatCard
-          label="إيرادات (USD)"
-          value={`$${stats.revenueUSD.toLocaleString("en-US")}`}
-          accent="coral"
+        <RevenueStatCard
+          revenueILS={stats.revenueILS}
+          revenueUSD={stats.revenueUSD}
         />
       </div>
 
@@ -372,6 +371,54 @@ function StatCard({
       >
         {value}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Revenue stat — always shows whatever currencies actually exist in the
+ * data. ILS leads (it's the dominant currency for SeeYa) with USD as a
+ * secondary line when present. Falls back to a neutral '—' when both
+ * are zero so the card never claims '$0' while shekels are pouring in.
+ */
+function RevenueStatCard({
+  revenueILS,
+  revenueUSD,
+}: {
+  revenueILS: number;
+  revenueUSD: number;
+}) {
+  const hasILS = revenueILS > 0;
+  const hasUSD = revenueUSD > 0;
+  return (
+    <div className="rounded-2xl bg-white border border-ink/5 p-4">
+      <div className="text-xs text-ink/50 font-semibold uppercase tracking-wider">
+        إيرادات
+      </div>
+      {!hasILS && !hasUSD ? (
+        <div className="text-2xl md:text-3xl font-black mt-1 tabular-nums text-ink/30">
+          —
+        </div>
+      ) : (
+        <div className="mt-1 space-y-0.5">
+          {hasILS && (
+            <div className="text-2xl md:text-3xl font-black tabular-nums text-coral">
+              <bdi>{revenueILS.toLocaleString("en-US")} ₪</bdi>
+            </div>
+          )}
+          {hasUSD && (
+            <div
+              className={`tabular-nums ${
+                hasILS
+                  ? "text-base font-bold text-coral/70"
+                  : "text-2xl md:text-3xl font-black text-coral"
+              }`}
+            >
+              <bdi>${revenueUSD.toLocaleString("en-US")}</bdi>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

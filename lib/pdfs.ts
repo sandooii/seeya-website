@@ -22,7 +22,14 @@ export function tripPdfKey(tripId: string): string {
 }
 
 /**
- * Resolve a `pdf_path` (e.g., "uuid.pdf") to a public URL.
+ * Resolve a `pdf_path` to a fetchable URL.
+ *
+ * Two shapes are accepted:
+ *   - Absolute / static — starts with "/" (e.g. "/thailand-program.pdf")
+ *     → resolved against the site root, served from /public.
+ *     This covers PDFs that pre-date the Supabase Storage flow.
+ *   - Storage key — e.g. "<trip-uuid>.pdf"
+ *     → resolved to the public URL of the trip-pdfs bucket.
  *
  * Returns null when path is empty/null. Adds a `?v=` cachebuster so
  * replacing the file invalidates browser caches.
@@ -32,6 +39,13 @@ export function getTripPdfUrl(
   version?: string,
 ): string | null {
   if (!path) return null;
+
+  // Legacy / static asset — served from /public. The leading slash is
+  // preserved so the browser fetches it from the same origin.
+  if (path.startsWith("/")) {
+    return version ? `${path}?v=${encodeURIComponent(version)}` : path;
+  }
+
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!base) {
     console.warn("[pdfs] NEXT_PUBLIC_SUPABASE_URL is missing");

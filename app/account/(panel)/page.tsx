@@ -28,6 +28,7 @@ import {
 import { getTripPdfUrl } from "@/lib/pdfs";
 import { waLink, CONTACT } from "@/lib/contact";
 import LiveCountdown from "@/components/account/LiveCountdown";
+import { tripDepartureMs } from "@/lib/trips";
 
 export const metadata = { title: "رحلاتي — SeeYa" };
 
@@ -44,6 +45,7 @@ type BookingWithTrip = BookingRow & {
     | "start_date"
     | "pdf_path"
     | "updated_at"
+    | "companion_content"
   > | null;
 };
 
@@ -76,7 +78,7 @@ export default async function AccountHomePage({
     .select(
       `
         *,
-        trip:trips(id, slug, name, country, image_url, month, duration, start_date, pdf_path, updated_at)
+        trip:trips(id, slug, name, country, image_url, month, duration, start_date, pdf_path, updated_at, companion_content)
       `,
     )
     .eq("client_id", user.id)
@@ -231,6 +233,10 @@ export default async function AccountHomePage({
 function FeaturedBookingCard({ booking }: { booking: BookingWithTrip }) {
   const trip = booking.trip!;
   const pdfUrl = getTripPdfUrl(trip.pdf_path, trip.updated_at);
+  const departureMs = tripDepartureMs({
+    startDate: trip.start_date,
+    companion: trip.companion_content,
+  });
 
   return (
     <article className="bg-white rounded-3xl border border-ink/5 overflow-hidden shadow-sm">
@@ -264,16 +270,16 @@ function FeaturedBookingCard({ booking }: { booking: BookingWithTrip }) {
                 <bdi>{trip.month}</bdi> · <bdi>{trip.duration}</bdi>
               </p>
             </div>
-            {trip.start_date && <LiveCountdown startsAtIso={trip.start_date} />}
+            {departureMs !== null && <LiveCountdown targetMs={departureMs} />}
           </div>
         </div>
       </div>
 
       {/* Body: smart payment + actions */}
-      <div className="p-5 md:p-6 space-y-4">
+      <div className="p-5 md:p-6 space-y-5">
         <PaymentStatus booking={booking} />
 
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 border-t border-ink/5 -mx-5 md:-mx-6 px-5 md:px-6 pt-4">
           {/* Primary CTA — guide */}
           <Link
             href={`/account/trips/${booking.id}`}
@@ -346,9 +352,13 @@ function PaymentStatus({ booking }: { booking: BookingWithTrip }) {
 
   // Partial — show progress + remaining + ping-us link.
   if (paid > 0) {
+    // Render the filled bar with a minimum visible width when any payment
+    // exists, so a 1%-paid booking still shows a clear coral nub rather
+    // than a barely-visible line.
+    const fillWidth = pct > 0 && pct < 3 ? 3 : pct;
     return (
-      <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs">
+      <div className="space-y-3">
+        <div className="flex items-center justify-between text-xs gap-3">
           <span className="text-ink/65 font-semibold">
             دفعت{" "}
             <bdi className="tabular-nums">
@@ -363,14 +373,14 @@ function PaymentStatus({ booking }: { booking: BookingWithTrip }) {
             {Math.round(pct)}%
           </span>
         </div>
-        <div className="h-1.5 rounded-full bg-ink/8 overflow-hidden">
+        <div className="h-2 rounded-full bg-ink/8 overflow-hidden">
           <div
             className="h-full rounded-full bg-coral transition-all"
-            style={{ width: `${pct}%` }}
+            style={{ width: `${fillWidth}%` }}
           />
         </div>
-        <div className="flex items-center justify-between gap-3 pt-1">
-          <p className="text-xs text-ink/65">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-sm text-ink/70">
             متبقي{" "}
             <bdi className="font-bold text-ink tabular-nums">
               {formatBookingPrice(remaining, currency)}
@@ -382,7 +392,7 @@ function PaymentStatus({ booking }: { booking: BookingWithTrip }) {
             )}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs font-bold text-coral hover:underline"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-coral hover:underline"
           >
             <MessageCircle size={12} />
             كلميني لإتمام الدفع
@@ -572,7 +582,6 @@ function computeReminders(bookings: BookingWithTrip[]): Reminder[] {
   for (const b of bookings) {
     if (b.status === "cancelled" || !b.trip) continue;
     const startDate = b.trip.start_date ? new Date(b.trip.start_date) : null;
-    const remaining = remainingAmount(b);
 
     // Trip in <= 7 days
     if (startDate) {
@@ -595,24 +604,10 @@ function computeReminders(bookings: BookingWithTrip[]): Reminder[] {
       }
     }
 
-    // Payment outstanding + trip in <= 30 days
-    if (remaining > 0 && b.status !== "paid_full" && startDate) {
-      const diff = Math.ceil(
-        (startDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-      );
-      if (diff > 0 && diff <= 30) {
-        out.push({
-          tone: "amber",
-          icon: <AlertCircle size={18} />,
-          title: `لسا في مبلغ متبقي على رحلة ${b.trip.name}`,
-          body: `متبقي ${formatBookingPrice(remaining, b.currency)} — احنا هون لو في أي سؤال`,
-          cta: {
-            label: "كلمينا",
-            href: waLink(`بدي أسأل عن دفع رحلة ${b.trip.name}`),
-          },
-        });
-      }
-    }
+    // Payment-outstanding reminder removed — the featured booking
+    // card already shows the remaining amount + a 'كلميني للدفع' CTA
+    // right above where this banner used to render, so the banner was
+    // pure duplication.
   }
 
   return out;
