@@ -208,10 +208,12 @@ export default async function AdminDashboardPage() {
                   →
                 </span>
               </div>
-              <div className="text-3xl font-black text-ink tabular-nums">
+              <div className="text-3xl font-black text-ink tabular-nums text-right">
                 {stat.value}
               </div>
-              <div className="text-sm text-ink/60 mt-1">{stat.label}</div>
+              <div className="text-sm text-ink/60 mt-1 text-right">
+                {stat.label}
+              </div>
             </Link>
           );
         })}
@@ -229,7 +231,7 @@ export default async function AdminDashboardPage() {
           <p className="text-ink/60 text-sm mb-3">
             حجوزات بانتظار تأكيد المقدّم
           </p>
-          <div className="flex items-end gap-3">
+          <div className="flex items-end justify-between gap-3 flex-wrap">
             <div className="text-4xl font-black text-amber-600 tabular-nums">
               {pendingDeposits}
             </div>
@@ -254,22 +256,16 @@ export default async function AdminDashboardPage() {
           <p className="text-ink/60 text-sm mb-3">
             من كل الحجوزات (غير الملغية)
           </p>
-          <div className="flex flex-wrap items-end gap-x-4 gap-y-1">
+          <div className="flex flex-wrap items-end justify-start gap-x-4 gap-y-1">
             {revenueUSD > 0 && (
-              <div
-                className="text-3xl font-black text-emerald-600 tabular-nums"
-                dir="ltr"
-              >
+              <bdi className="text-3xl font-black text-emerald-600 tabular-nums">
                 ${revenueUSD.toLocaleString("en-US")}
-              </div>
+              </bdi>
             )}
             {revenueILS > 0 && (
-              <div
-                className="text-2xl font-black text-emerald-600/80 tabular-nums"
-                dir="ltr"
-              >
+              <bdi className="text-2xl font-black text-emerald-600/80 tabular-nums">
                 {revenueILS.toLocaleString("en-US")} ₪
-              </div>
+              </bdi>
             )}
             {revenueUSD === 0 && revenueILS === 0 && (
               <div className="text-ink/30 text-sm">— لا يوجد بعد —</div>
@@ -451,14 +447,11 @@ function MiniStat({
 
   const content = (
     <div
-      className={`rounded-2xl p-4 ${toneClasses[tone]} ${href ? "hover:brightness-95 transition-all" : ""}`}
+      className={`rounded-2xl p-4 text-right ${toneClasses[tone]} ${href ? "hover:brightness-95 transition-all" : ""}`}
     >
       <div className="text-xs font-semibold opacity-80">{label}</div>
-      <div
-        className="text-2xl md:text-3xl font-black tabular-nums mt-1"
-        dir="ltr"
-      >
-        {value}
+      <div className="text-2xl md:text-3xl font-black tabular-nums mt-1">
+        <bdi>{value}</bdi>
       </div>
       {hint && (
         <div className="text-[10px] opacity-70 mt-1">{hint}</div>

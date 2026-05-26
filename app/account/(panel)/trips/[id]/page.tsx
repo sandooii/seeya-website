@@ -237,16 +237,62 @@ export default async function MyTripDetailPage({
         </a>
       </section>
 
-      {/* Flight */}
-      {hasFlight(companion.flight) && (
-        <CompanionSection
-          title="معلومات الطيران"
-          icon={<Plane size={18} />}
-          accent="coral"
-        >
-          <FlightCard flight={companion.flight!} />
-        </CompanionSection>
-      )}
+      {/* Flights — resolve per-booking override over trip default */}
+      {(() => {
+        const outbound =
+          (hasFlight(booking.flight_override?.outbound)
+            ? booking.flight_override?.outbound
+            : null) ??
+          (hasFlight(companion.flight) ? companion.flight : null);
+        const returnFlight =
+          (hasFlight(booking.flight_override?.return_flight)
+            ? booking.flight_override?.return_flight
+            : null) ??
+          (hasFlight(companion.return_flight)
+            ? companion.return_flight
+            : null);
+        const isOutboundOverride = hasFlight(
+          booking.flight_override?.outbound,
+        );
+        const isReturnOverride = hasFlight(
+          booking.flight_override?.return_flight,
+        );
+
+        return (
+          <>
+            {outbound && (
+              <CompanionSection
+                title="طيران الذهاب 🛫"
+                icon={<Plane size={18} />}
+                accent="coral"
+              >
+                {isOutboundOverride && <OverrideBadge />}
+                <FlightCard flight={outbound} />
+              </CompanionSection>
+            )}
+
+            {/* Return flight — show section even when empty, with a
+                friendly "coming later" placeholder so the client knows
+                this info is on the way. */}
+            <CompanionSection
+              title="طيران الرجعة 🛬"
+              icon={<Plane size={18} />}
+              accent="coral"
+            >
+              {returnFlight ? (
+                <>
+                  {isReturnOverride && <OverrideBadge />}
+                  <FlightCard flight={returnFlight} />
+                </>
+              ) : (
+                <p className="text-sm text-ink/60 bg-ink/3 rounded-2xl px-4 py-5 text-center">
+                  ⏳ معلومات طيران الرجعة بتيجي لاحقاً — هنعلمك أول ما تجهز
+                </p>
+              )}
+            </CompanionSection>
+          </>
+        );
+      })()}
 
       {/* Hotel */}
       {hasHotel(companion.hotel) && (
@@ -406,7 +452,7 @@ export default async function MyTripDetailPage({
 // helpers
 // ────────────────────────────────────────────────
 
-function hasFlight(f?: FlightInfo): boolean {
+function hasFlight(f?: FlightInfo | null): f is FlightInfo {
   if (!f) return false;
   return Boolean(
     f.departure_date ||
@@ -415,6 +461,14 @@ function hasFlight(f?: FlightInfo): boolean {
       f.airline ||
       f.flight_number ||
       f.notes,
+  );
+}
+
+function OverrideBadge() {
+  return (
+    <div className="mb-4 inline-flex items-center gap-2 text-[11px] font-bold tracking-wider uppercase text-coral bg-coral/10 px-3 py-1.5 rounded-full">
+      ✦ طيران خاص بكِ
+    </div>
   );
 }
 

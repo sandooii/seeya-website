@@ -94,13 +94,30 @@ export type RestaurantItem = {
 };
 
 export type TripCompanion = {
+  /** Outbound flight (default for all bookings — overridable per-booking). */
   flight?: FlightInfo;
+  /**
+   * Return flight (default for all bookings — overridable per-booking).
+   * Optional: trips might not have return flight info ready yet.
+   */
+  return_flight?: FlightInfo;
   hotel?: HotelInfo;
   recommendations?: RecommendationItem[];
   restaurants?: RestaurantItem[];
   warnings?: string[];
   tips?: string[];
   packing?: string[];
+};
+
+/**
+ * Per-booking flight override. When a late addition gets a different
+ * flight from the rest of the group, fill this in — the override wins
+ * over `trip.companion_content.flight` / `.return_flight`. Either side
+ * is optional; absent sides fall back to the trip default.
+ */
+export type BookingFlightOverride = {
+  outbound?: FlightInfo;
+  return_flight?: FlightInfo;
 };
 
 export type TripRow = {
@@ -153,6 +170,12 @@ export type BookingRow = {
   currency: CurrencyCode;
   notes: string | null;
   admin_notes: string | null;
+  /**
+   * Optional per-booking flight override (migration 0008). When set,
+   * the client portal shows this in place of the trip's default flight
+   * info. See `BookingFlightOverride`.
+   */
+  flight_override: BookingFlightOverride | null;
   created_at: string;
   updated_at: string;
 };

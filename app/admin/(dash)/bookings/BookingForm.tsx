@@ -10,6 +10,7 @@ import type {
   TripRow,
 } from "@/lib/supabase/types";
 import { bookingStatusLabel } from "@/lib/bookings";
+import FlightOverrideSection from "./FlightOverrideSection";
 import { type BookingFormState } from "./actions";
 
 type Action = (
@@ -346,6 +347,9 @@ export default function BookingForm({
           />
         </Field>
       </Section>
+
+      {/* ─── Flight override (optional) ─── */}
+      <FlightOverrideSection initial={booking?.flight_override ?? null} />
 
       {/* ─── Submit ─── */}
       <div className="flex items-center justify-start gap-3 sticky bottom-0 bg-cream/90 backdrop-blur py-4 -mx-6 px-6 border-t border-ink/8 mt-10">

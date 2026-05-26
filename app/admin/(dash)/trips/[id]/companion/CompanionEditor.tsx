@@ -16,12 +16,12 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import type {
-  FlightInfo,
   HotelInfo,
   RecommendationItem,
   RestaurantItem,
   TripCompanion,
 } from "@/lib/supabase/types";
+import FlightFieldsEditor from "@/components/admin/FlightFieldsEditor";
 import { saveTripCompanion } from "./actions";
 
 export default function CompanionEditor({
@@ -53,13 +53,24 @@ export default function CompanionEditor({
   return (
     <div className="space-y-6" dir="rtl">
       <Section
-        title="معلومات الطيران"
+        title="طيران الذهاب 🛫"
         icon={<Plane size={18} />}
         accent="coral"
       >
-        <FlightForm
+        <FlightFieldsEditor
           value={content.flight ?? {}}
           onChange={(v) => setContent({ ...content, flight: v })}
+        />
+      </Section>
+
+      <Section
+        title="طيران الرجعة 🛬"
+        icon={<Plane size={18} />}
+        accent="coral"
+      >
+        <FlightFieldsEditor
+          value={content.return_flight ?? {}}
+          onChange={(v) => setContent({ ...content, return_flight: v })}
         />
       </Section>
 
@@ -199,112 +210,6 @@ function Section({
       </summary>
       <div className="p-6 border-t border-ink/5">{children}</div>
     </details>
-  );
-}
-
-// ────────────────────────────────────────────────
-// Flight Form
-// ────────────────────────────────────────────────
-
-function FlightForm({
-  value,
-  onChange,
-}: {
-  value: FlightInfo;
-  onChange: (v: FlightInfo) => void;
-}) {
-  const set = (k: keyof FlightInfo, v: string) =>
-    onChange({ ...value, [k]: v || undefined });
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <Field label="تاريخ المغادرة">
-        <input
-          type="date"
-          dir="ltr"
-          value={value.departure_date ?? ""}
-          onChange={(e) => set("departure_date", e.target.value)}
-          className={inputClass + " text-left"}
-        />
-      </Field>
-      <Field label="وقت المغادرة">
-        <input
-          type="time"
-          dir="ltr"
-          value={value.departure_time ?? ""}
-          onChange={(e) => set("departure_time", e.target.value)}
-          className={inputClass + " text-left tabular-nums"}
-        />
-      </Field>
-      <Field label="مطار المغادرة (كود)">
-        <input
-          value={value.departure_airport ?? ""}
-          onChange={(e) => set("departure_airport", e.target.value)}
-          dir="ltr"
-          placeholder="TLV"
-          className={inputClass + " text-left uppercase"}
-        />
-      </Field>
-      <Field label="اسم مطار المغادرة">
-        <input
-          value={value.departure_airport_name ?? ""}
-          onChange={(e) => set("departure_airport_name", e.target.value)}
-          placeholder="بن غوريون"
-          className={inputClass}
-        />
-      </Field>
-      <Field label="مطار الوصول (كود)">
-        <input
-          value={value.arrival_airport ?? ""}
-          onChange={(e) => set("arrival_airport", e.target.value)}
-          dir="ltr"
-          placeholder="BKK"
-          className={inputClass + " text-left uppercase"}
-        />
-      </Field>
-      <Field label="اسم مطار الوصول">
-        <input
-          value={value.arrival_airport_name ?? ""}
-          onChange={(e) => set("arrival_airport_name", e.target.value)}
-          placeholder="سوارنابومي"
-          className={inputClass}
-        />
-      </Field>
-      <Field label="شركة الطيران">
-        <input
-          value={value.airline ?? ""}
-          onChange={(e) => set("airline", e.target.value)}
-          placeholder="El Al / Turkish Airlines"
-          className={inputClass}
-        />
-      </Field>
-      <Field label="رقم الرحلة">
-        <input
-          value={value.flight_number ?? ""}
-          onChange={(e) => set("flight_number", e.target.value)}
-          dir="ltr"
-          placeholder="LY 81"
-          className={inputClass + " text-left tabular-nums"}
-        />
-      </Field>
-      <Field label="مدة الرحلة">
-        <input
-          value={value.duration ?? ""}
-          onChange={(e) => set("duration", e.target.value)}
-          placeholder="11 ساعة و 30 دقيقة"
-          className={inputClass}
-        />
-      </Field>
-      <Field label="ملاحظات / تذكير" full>
-        <textarea
-          value={value.notes ?? ""}
-          onChange={(e) => set("notes", e.target.value)}
-          rows={2}
-          placeholder="مثال: اوصلي للمطار قبل 3 ساعات، احضّري الجواز والفيزا"
-          className={inputClass}
-        />
-      </Field>
-    </div>
   );
 }
 

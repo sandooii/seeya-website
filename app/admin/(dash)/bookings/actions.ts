@@ -8,7 +8,12 @@ import {
 } from "@/lib/supabase/server";
 import { bookingCountsAsTaken } from "@/lib/bookings";
 import { normalizePhone, resolveAuthEmail } from "@/lib/auth-helpers";
-import type { BookingStatus, CurrencyCode } from "@/lib/supabase/types";
+import type {
+  BookingFlightOverride,
+  BookingStatus,
+  CurrencyCode,
+  FlightInfo,
+} from "@/lib/supabase/types";
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
@@ -39,7 +44,38 @@ type BookingPayload = {
   currency: CurrencyCode;
   notes: string | null;
   admin_notes: string | null;
+  flight_override: BookingFlightOverride | null;
 };
+
+/**
+ * Parse the hidden `flight_override` field. Returns null when the field is
+ * empty, malformed, or contains no actual flight data (so we don't store
+ * `{}` blobs in the DB). Strips empty strings from FlightInfo values.
+ */
+function parseFlightOverride(raw: string): BookingFlightOverride | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (!parsed || typeof parsed !== "object") return null;
+    const cleanSide = (side: unknown): FlightInfo | undefined => {
+      if (!side || typeof side !== "object") return undefined;
+      const out: Record<string, string> = {};
+      for (const [k, v] of Object.entries(side as Record<string, unknown>)) {
+        if (typeof v === "string" && v.trim()) out[k] = v;
+      }
+      return Object.keys(out).length > 0 ? (out as FlightInfo) : undefined;
+    };
+    const result: BookingFlightOverride = {};
+    const outbound = cleanSide((parsed as Record<string, unknown>).outbound);
+    const ret = cleanSide((parsed as Record<string, unknown>).return_flight);
+    if (outbound) result.outbound = outbound;
+    if (ret) result.return_flight = ret;
+    return Object.keys(result).length > 0 ? result : null;
+  } catch {
+    return null;
+  }
+}
 
 function payloadFromForm(formData: FormData): {
   payload?: BookingPayload;
@@ -90,6 +126,10 @@ function payloadFromForm(formData: FormData): {
   if (Object.keys(fieldErrors).length > 0) return { fieldErrors };
   if (!status) return { fieldErrors };
 
+  const flight_override = parseFlightOverride(
+    String(formData.get("flight_override") ?? ""),
+  );
+
   return {
     payload: {
       trip_id,
@@ -107,6 +147,7 @@ function payloadFromForm(formData: FormData): {
       currency,
       notes: String(formData.get("notes") ?? "").trim() || null,
       admin_notes: String(formData.get("admin_notes") ?? "").trim() || null,
+      flight_override,
     },
   };
 }
