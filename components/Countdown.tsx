@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import type { Trip } from "./data";
-import { tripDepartureMs } from "@/lib/trips";
+import { tripDepartureMs } from "@/lib/trip-departure";
 
 /**
  * Fallback used only if the trip row is missing or has no start_date.

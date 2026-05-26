@@ -39,7 +39,7 @@ import {
 import { getTripPdfUrl } from "@/lib/pdfs";
 import { waLink } from "@/lib/contact";
 import LiveCountdown from "@/components/account/LiveCountdown";
-import { tripDepartureMs } from "@/lib/trips";
+import { tripDepartureMs } from "@/lib/trip-departure";
 
 export const metadata = { title: "دليل رحلتي — SeeYa" };
 
