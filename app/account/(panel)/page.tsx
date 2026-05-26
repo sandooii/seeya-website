@@ -243,8 +243,10 @@ function FeaturedBookingCard({ booking }: { booking: BookingWithTrip }) {
 
   return (
     <article className="bg-white rounded-3xl border border-ink/5 overflow-hidden shadow-sm">
-      {/* Hero: image + title only (countdown moved out so it can breathe) */}
-      <div className="relative aspect-[16/9] md:aspect-[21/9] text-white">
+      {/* Hero: image with badge (top), title (middle), countdown (bottom).
+          Everything centered horizontally so the title and ticker share a
+          balanced vertical column instead of competing on the same row. */}
+      <div className="relative aspect-[4/5] sm:aspect-[16/10] md:aspect-[21/10] text-white">
         <Image
           src={trip.image_url}
           alt={trip.name}
@@ -253,18 +255,21 @@ function FeaturedBookingCard({ booking }: { booking: BookingWithTrip }) {
           className="object-cover"
           sizes="(min-width: 768px) 80vw, 100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-l from-black/70 via-black/25 to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/45 to-black/75" />
 
-        <div className="absolute inset-0 p-5 md:p-8 flex flex-col justify-between">
-          {/* Top: badge — aligned to visual right in RTL */}
-          <div className="flex justify-end">
+        <div className="absolute inset-0 p-5 md:p-8 flex flex-col">
+          {/* Top: badge aligned to the visual right (RTL start) */}
+          <div className="flex justify-start">
             <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur px-3 py-1 rounded-full text-[11px] font-bold border border-white/30">
               ✦ رحلتك القادمة
             </span>
           </div>
 
-          {/* Bottom: title + dates only */}
-          <div className="text-right">
+          {/* Spacer pushes the title+countdown stack toward the bottom */}
+          <div className="flex-1" />
+
+          {/* Title + dates */}
+          <div className="text-center">
             <h2 className="text-2xl md:text-4xl font-black drop-shadow-lg leading-tight">
               {trip.name}
             </h2>
@@ -272,16 +277,15 @@ function FeaturedBookingCard({ booking }: { booking: BookingWithTrip }) {
               <bdi>{trip.month}</bdi> · <bdi>{trip.duration}</bdi>
             </p>
           </div>
+
+          {/* Countdown sits underneath, centered with breathing room */}
+          {departureMs !== null && (
+            <div className="mt-4 md:mt-5 mx-auto w-full max-w-md">
+              <LiveCountdown targetMs={departureMs} variant="dark" />
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Countdown — its own dedicated card under the hero so it doesn't
-          fight the trip title for space inside the image overlay. */}
-      {departureMs !== null && (
-        <div className="px-5 md:px-6 pt-5 md:pt-6">
-          <LiveCountdown targetMs={departureMs} variant="light" />
-        </div>
-      )}
 
       {/* Body: smart payment + actions */}
       <div className="p-5 md:p-6 space-y-5">

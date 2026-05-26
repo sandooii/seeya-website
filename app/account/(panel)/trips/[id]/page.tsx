@@ -134,8 +134,10 @@ export default async function MyTripDetailPage({
         <span>كل رحلاتي</span>
       </Link>
 
-      {/* Hero — image + title only (countdown moved to its own card below) */}
-      <section className="relative overflow-hidden rounded-3xl text-white aspect-[16/9] md:aspect-[21/9]">
+      {/* Hero — image with badge (top), title + countdown (centered stack
+          near the bottom). Centered stack keeps everything visually balanced
+          on both phone and desktop. */}
+      <section className="relative overflow-hidden rounded-3xl text-white aspect-[4/5] sm:aspect-[16/10] md:aspect-[21/10]">
         <Image
           src={trip.image_url}
           alt={trip.name}
@@ -144,9 +146,9 @@ export default async function MyTripDetailPage({
           className="object-cover"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-l from-black/70 via-black/25 to-black/45" />
-        <div className="absolute inset-0 p-6 md:p-10 flex flex-col justify-between">
-          <div className="flex items-center gap-2 flex-wrap justify-end">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/45 to-black/75" />
+        <div className="absolute inset-0 p-6 md:p-10 flex flex-col">
+          <div className="flex items-center gap-2 flex-wrap">
             <span
               className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${bookingStatusColor[booking.status]}`}
             >
@@ -157,21 +159,24 @@ export default async function MyTripDetailPage({
             </span>
           </div>
 
-          <div className="text-right">
-            <h1 className="text-3xl md:text-5xl font-black drop-shadow-lg">
+          <div className="flex-1" />
+
+          <div className="text-center">
+            <h1 className="text-3xl md:text-5xl font-black drop-shadow-lg leading-tight">
               {trip.name}
             </h1>
             <p className="text-white/85 text-sm mt-1 tabular-nums">
               <bdi>{trip.month}</bdi> · <bdi>{trip.duration}</bdi>
             </p>
           </div>
+
+          {departureMs !== null && daysUntil !== null && daysUntil >= 0 && (
+            <div className="mt-4 md:mt-5 mx-auto w-full max-w-md">
+              <LiveCountdown targetMs={departureMs} variant="dark" />
+            </div>
+          )}
         </div>
       </section>
-
-      {/* Countdown — its own card so it has room to breathe */}
-      {departureMs !== null && daysUntil !== null && daysUntil >= 0 && (
-        <LiveCountdown targetMs={departureMs} variant="light" />
-      )}
 
       {/* Payment progress */}
       <section className="bg-white rounded-3xl border border-ink/5 p-6">
