@@ -38,6 +38,7 @@ import {
 import { getTripPdfUrl } from "@/lib/pdfs";
 import { waLink } from "@/lib/contact";
 import LiveCountdown from "@/components/account/LiveCountdown";
+import CollapsibleCompanionSection from "@/components/account/CollapsibleCompanionSection";
 import { tripDepartureMs } from "@/lib/trip-departure";
 
 export const metadata = { title: "دليل رحلتي — SeeYa" };
@@ -316,12 +317,14 @@ export default async function MyTripDetailPage({
         </CompanionSection>
       )}
 
-      {/* Day-by-day itinerary */}
+      {/* Day-by-day itinerary — long content, collapsed by default */}
       {trip.itinerary && trip.itinerary.length > 0 && (
-        <CompanionSection
+        <CollapsibleCompanionSection
           title="برنامج الرحلة اليومي"
           icon={<ListChecks size={18} />}
           accent="emerald"
+          count={trip.itinerary.length}
+          countLabel="يوم · انقري للعرض"
         >
           <div className="space-y-3">
             {trip.itinerary.map((d, i) => (
@@ -329,9 +332,7 @@ export default async function MyTripDetailPage({
                 key={i}
                 className="border-r-2 border-coral/30 pr-4 py-2"
               >
-                <div className="text-xs font-bold text-coral tracking-wider uppercase">
-                  {d.day}
-                </div>
+                <div className="text-xs font-bold text-coral">{d.day}</div>
                 <h3 className="text-lg font-black text-ink mt-0.5">
                   {d.title}
                 </h3>
@@ -339,51 +340,55 @@ export default async function MyTripDetailPage({
               </div>
             ))}
           </div>
-        </CompanionSection>
+        </CollapsibleCompanionSection>
       )}
 
       {/* The "ما تشمله الرحلة" section is intentionally NOT rendered
           on the client portal — booked clients already received the
-          inclusions list before paying. Keeping it here just clutters
-          the personal trip companion. The data is still available to
-          admin via the trip edit form. */}
+          inclusions list before paying. */}
 
-      {/* Restaurants */}
+      {/* Restaurants — collapsed by default */}
       {companion.restaurants && companion.restaurants.length > 0 && (
-        <CompanionSection
+        <CollapsibleCompanionSection
           title="مطاعم موصى بها"
           icon={<Utensils size={18} />}
           accent="amber"
+          count={companion.restaurants.length}
+          countLabel="مطعم · انقري للعرض"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {companion.restaurants.map((r, i) => (
               <RestaurantCard key={i} item={r} />
             ))}
           </div>
-        </CompanionSection>
+        </CollapsibleCompanionSection>
       )}
 
-      {/* Recommendations */}
+      {/* Recommendations — collapsed by default */}
       {companion.recommendations && companion.recommendations.length > 0 && (
-        <CompanionSection
+        <CollapsibleCompanionSection
           title="توصياتنا (أماكن وأنشطة)"
           icon={<Compass size={18} />}
           accent="emerald"
+          count={companion.recommendations.length}
+          countLabel="توصية · انقري للعرض"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {companion.recommendations.map((r, i) => (
               <RecommendationCard key={i} item={r} />
             ))}
           </div>
-        </CompanionSection>
+        </CollapsibleCompanionSection>
       )}
 
-      {/* Warnings */}
+      {/* Warnings — collapsed by default */}
       {companion.warnings && companion.warnings.length > 0 && (
-        <CompanionSection
+        <CollapsibleCompanionSection
           title="تحذيرات مهمة"
           icon={<AlertTriangle size={18} />}
           accent="red"
+          count={companion.warnings.length}
+          countLabel="تحذير · انقري للعرض"
         >
           <ul className="space-y-2">
             {companion.warnings.map((w, i) => (
@@ -396,15 +401,17 @@ export default async function MyTripDetailPage({
               </li>
             ))}
           </ul>
-        </CompanionSection>
+        </CollapsibleCompanionSection>
       )}
 
-      {/* Tips */}
+      {/* Tips — collapsed by default */}
       {companion.tips && companion.tips.length > 0 && (
-        <CompanionSection
+        <CollapsibleCompanionSection
           title="نصائح من SeeYa"
           icon={<Lightbulb size={18} />}
           accent="coral"
+          count={companion.tips.length}
+          countLabel="نصيحة · انقري للعرض"
         >
           <ul className="space-y-2">
             {companion.tips.map((t, i) => (
@@ -417,15 +424,17 @@ export default async function MyTripDetailPage({
               </li>
             ))}
           </ul>
-        </CompanionSection>
+        </CollapsibleCompanionSection>
       )}
 
-      {/* Packing list */}
+      {/* Packing list — collapsed by default */}
       {companion.packing && companion.packing.length > 0 && (
-        <CompanionSection
+        <CollapsibleCompanionSection
           title="قائمة التحضير 🧳"
           icon={<Luggage size={18} />}
           accent="violet"
+          count={companion.packing.length}
+          countLabel="غرض · انقري للعرض"
         >
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
             {companion.packing.map((p, i) => (
@@ -438,7 +447,7 @@ export default async function MyTripDetailPage({
               </li>
             ))}
           </ul>
-        </CompanionSection>
+        </CollapsibleCompanionSection>
       )}
     </div>
   );
