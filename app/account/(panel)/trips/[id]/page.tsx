@@ -317,7 +317,62 @@ export default async function MyTripDetailPage({
         </CompanionSection>
       )}
 
-      {/* Day-by-day itinerary — long content, collapsed by default */}
+      {/* Ordered by priority for SANDO's audience: pack first, then
+          read the warnings, then the daily plan, then nice-to-have
+          tips / restaurants / recommendations. */}
+
+      {/* 1. Packing list */}
+      {companion.packing && companion.packing.length > 0 && (
+        <CollapsibleCompanionSection
+          title="قائمة التحضير 🧳"
+          icon={<Luggage size={18} />}
+          accent="violet"
+          count={companion.packing.length}
+          countLabel="غرض · انقري للعرض"
+        >
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+            {companion.packing.map((p, i) => (
+              <li
+                key={i}
+                className="flex items-start gap-2 text-sm text-ink/80 bg-violet-50/40 border border-violet-100 rounded-lg px-3 py-2"
+              >
+                <span className="text-violet-500 shrink-0">▢</span>
+                <span>{p}</span>
+              </li>
+            ))}
+          </ul>
+        </CollapsibleCompanionSection>
+      )}
+
+      {/* 2. Warnings — bolder, larger, more emphatic so they read as
+          safety-critical instead of a list of bullet points. */}
+      {companion.warnings && companion.warnings.length > 0 && (
+        <CollapsibleCompanionSection
+          title="تحذيرات مهمة"
+          icon={<AlertTriangle size={18} />}
+          accent="red"
+          count={companion.warnings.length}
+          countLabel="تحذير · انقري للعرض"
+        >
+          <ul className="space-y-2.5">
+            {companion.warnings.map((w, i) => (
+              <li
+                key={i}
+                className="flex items-start gap-3 bg-red-50 border-2 border-red-200 rounded-xl px-4 py-3"
+              >
+                <span className="grid place-items-center w-7 h-7 rounded-lg bg-red-500 text-white shrink-0 shadow-sm">
+                  <AlertTriangle size={15} />
+                </span>
+                <span className="text-base font-bold text-red-900 leading-relaxed">
+                  {w}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </CollapsibleCompanionSection>
+      )}
+
+      {/* 3. Day-by-day itinerary */}
       {trip.itinerary && trip.itinerary.length > 0 && (
         <CollapsibleCompanionSection
           title="برنامج الرحلة اليومي"
@@ -343,68 +398,7 @@ export default async function MyTripDetailPage({
         </CollapsibleCompanionSection>
       )}
 
-      {/* The "ما تشمله الرحلة" section is intentionally NOT rendered
-          on the client portal — booked clients already received the
-          inclusions list before paying. */}
-
-      {/* Restaurants — collapsed by default */}
-      {companion.restaurants && companion.restaurants.length > 0 && (
-        <CollapsibleCompanionSection
-          title="مطاعم موصى بها"
-          icon={<Utensils size={18} />}
-          accent="amber"
-          count={companion.restaurants.length}
-          countLabel="مطعم · انقري للعرض"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {companion.restaurants.map((r, i) => (
-              <RestaurantCard key={i} item={r} />
-            ))}
-          </div>
-        </CollapsibleCompanionSection>
-      )}
-
-      {/* Recommendations — collapsed by default */}
-      {companion.recommendations && companion.recommendations.length > 0 && (
-        <CollapsibleCompanionSection
-          title="توصياتنا (أماكن وأنشطة)"
-          icon={<Compass size={18} />}
-          accent="emerald"
-          count={companion.recommendations.length}
-          countLabel="توصية · انقري للعرض"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {companion.recommendations.map((r, i) => (
-              <RecommendationCard key={i} item={r} />
-            ))}
-          </div>
-        </CollapsibleCompanionSection>
-      )}
-
-      {/* Warnings — collapsed by default */}
-      {companion.warnings && companion.warnings.length > 0 && (
-        <CollapsibleCompanionSection
-          title="تحذيرات مهمة"
-          icon={<AlertTriangle size={18} />}
-          accent="red"
-          count={companion.warnings.length}
-          countLabel="تحذير · انقري للعرض"
-        >
-          <ul className="space-y-2">
-            {companion.warnings.map((w, i) => (
-              <li
-                key={i}
-                className="flex items-start gap-2 text-sm bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-red-800"
-              >
-                <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-                <span>{w}</span>
-              </li>
-            ))}
-          </ul>
-        </CollapsibleCompanionSection>
-      )}
-
-      {/* Tips — collapsed by default */}
+      {/* 4. Tips */}
       {companion.tips && companion.tips.length > 0 && (
         <CollapsibleCompanionSection
           title="نصائح من SeeYa"
@@ -427,26 +421,37 @@ export default async function MyTripDetailPage({
         </CollapsibleCompanionSection>
       )}
 
-      {/* Packing list — collapsed by default */}
-      {companion.packing && companion.packing.length > 0 && (
+      {/* 5. Restaurants */}
+      {companion.restaurants && companion.restaurants.length > 0 && (
         <CollapsibleCompanionSection
-          title="قائمة التحضير 🧳"
-          icon={<Luggage size={18} />}
-          accent="violet"
-          count={companion.packing.length}
-          countLabel="غرض · انقري للعرض"
+          title="مطاعم موصى بها"
+          icon={<Utensils size={18} />}
+          accent="amber"
+          count={companion.restaurants.length}
+          countLabel="مطعم · انقري للعرض"
         >
-          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-            {companion.packing.map((p, i) => (
-              <li
-                key={i}
-                className="flex items-start gap-2 text-sm text-ink/80 bg-violet-50/40 border border-violet-100 rounded-lg px-3 py-2"
-              >
-                <span className="text-violet-500 shrink-0">▢</span>
-                <span>{p}</span>
-              </li>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {companion.restaurants.map((r, i) => (
+              <RestaurantCard key={i} item={r} />
             ))}
-          </ul>
+          </div>
+        </CollapsibleCompanionSection>
+      )}
+
+      {/* 6. Recommendations */}
+      {companion.recommendations && companion.recommendations.length > 0 && (
+        <CollapsibleCompanionSection
+          title="توصياتنا (أماكن وأنشطة)"
+          icon={<Compass size={18} />}
+          accent="emerald"
+          count={companion.recommendations.length}
+          countLabel="توصية · انقري للعرض"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {companion.recommendations.map((r, i) => (
+              <RecommendationCard key={i} item={r} />
+            ))}
+          </div>
         </CollapsibleCompanionSection>
       )}
     </div>
