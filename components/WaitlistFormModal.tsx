@@ -76,20 +76,20 @@ export default function WaitlistFormModal({
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-[200] grid place-items-center px-4"
+          className="fixed inset-0 z-[200] grid place-items-center px-4 py-4 overflow-y-auto"
           onClick={() => !pending && setOpen(false)}
         >
           <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" />
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full p-7 text-right"
+            className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 md:p-7 text-right my-auto"
             dir="rtl"
           >
             <button
               type="button"
               onClick={() => !pending && setOpen(false)}
               aria-label="إغلاق"
-              className="absolute top-4 left-4 w-9 h-9 grid place-items-center rounded-full text-ink/40 hover:text-ink hover:bg-ink/5 transition-colors"
+              className="absolute top-4 left-4 w-9 h-9 grid place-items-center rounded-full text-ink/40 hover:text-ink hover:bg-ink/5 transition-colors z-10"
             >
               <X size={18} />
             </button>
@@ -181,14 +181,19 @@ export default function WaitlistFormModal({
                     </div>
                   )}
 
-                  <button
-                    type="submit"
-                    disabled={pending}
-                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-coral text-white font-bold hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {pending && <Loader2 size={16} className="animate-spin" />}
-                    {pending ? "جاري التسجيل..." : "سجّليني"}
-                  </button>
+                  {/* Sticky submit so the call-to-action stays visible
+                      no matter how tall the form is (especially when the
+                      mobile keyboard is open). */}
+                  <div className="sticky bottom-0 -mx-6 md:-mx-7 px-6 md:px-7 pb-2 pt-3 bg-gradient-to-t from-white via-white to-white/95">
+                    <button
+                      type="submit"
+                      disabled={pending}
+                      className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-coral text-white font-bold hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-[0_10px_30px_-10px_rgba(249,92,107,0.55)]"
+                    >
+                      {pending && <Loader2 size={16} className="animate-spin" />}
+                      {pending ? "جاري التسجيل..." : "✨ سجّليني بقائمة الانتظار"}
+                    </button>
+                  </div>
                 </form>
               </>
             ) : (
