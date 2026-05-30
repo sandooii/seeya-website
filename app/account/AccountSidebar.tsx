@@ -174,11 +174,15 @@ export default function AccountSidebar({
         <div className="h-px mx-6 bg-ink/8" />
 
         <div className="p-4">
-          <div className="px-3 py-2 mb-2">
-            <div className="text-sm font-bold text-ink truncate">{userName}</div>
-            <div className="text-xs text-ink/50 truncate" dir="ltr">
-              {userEmail}
+          <div className="px-3 py-2 mb-2 text-right">
+            <div className="text-sm font-bold text-ink truncate">
+              {userName}
             </div>
+            {userEmail && (
+              <div className="text-xs text-ink/50 truncate mt-0.5">
+                <bdi className="tabular-nums">{userEmail}</bdi>
+              </div>
+            )}
           </div>
           <form action="/account/logout" method="post">
             <button

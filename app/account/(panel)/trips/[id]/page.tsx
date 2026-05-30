@@ -115,6 +115,20 @@ export default async function MyTripDetailPage({
   const pct = paymentProgress(booking);
   const remaining = remainingAmount(booking);
   const pdfUrl = getTripPdfUrl(trip.pdf_path, trip.updated_at);
+
+  // Compute the displayed status from the actual payment amounts so the
+  // hero badge never claims "مدفوع بالكامل" while there's money still
+  // outstanding (the manually-set status field can drift; money doesn't).
+  const totalAmount = Number(booking.total_amount);
+  const paidAmount = Number(booking.paid_amount);
+  const displayStatus: typeof booking.status =
+    booking.status === "cancelled"
+      ? "cancelled"
+      : totalAmount > 0 && paidAmount >= totalAmount
+        ? "paid_full"
+        : paidAmount > 0
+          ? "deposit_paid"
+          : "pending_deposit";
   // Personalized countdown — booking.flight_override.outbound wins
   // over the trip's shared companion flight when set.
   const departureMs = tripDepartureMs({
@@ -150,13 +164,15 @@ export default async function MyTripDetailPage({
         <div className="absolute inset-0 p-4 md:p-10 flex flex-col">
           <div className="flex items-center gap-2 flex-wrap">
             <span
-              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${bookingStatusColor[booking.status]}`}
+              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${bookingStatusColor[displayStatus]}`}
             >
-              {bookingStatusLabel[booking.status]}
+              {bookingStatusLabel[displayStatus]}
             </span>
-            <span className="text-white/85 text-xs">
-              #{booking.id.slice(0, 8)}
-            </span>
+            {booking.client_name && (
+              <span className="text-white/90 text-xs font-semibold">
+                {booking.client_name}
+              </span>
+            )}
           </div>
 
           <div className="flex-1" />
@@ -490,6 +506,18 @@ export default async function MyTripDetailPage({
 // helpers
 // ────────────────────────────────────────────────
 
+/**
+ * Convert an ISO date string ("2026-06-25") to the locale-friendly
+ * day-first format SANDO prefers ("25.06.2026"). Returns the input
+ * untouched when it doesn't look like an ISO date — defensive against
+ * old values that might already be formatted differently.
+ */
+function formatIsoDateDDMMYYYY(iso: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso.trim());
+  if (!m) return iso;
+  return `${m[3]}.${m[2]}.${m[1]}`;
+}
+
 function hasFlight(f?: FlightInfo | null): f is FlightInfo {
   if (!f) return false;
   return Boolean(
@@ -631,7 +659,7 @@ function FlightCard({ flight }: { flight: FlightInfo }) {
         {flight.departure_date && (
           <Pill
             label="التاريخ"
-            value={flight.departure_date}
+            value={formatIsoDateDDMMYYYY(flight.departure_date)}
             ltrValue
           />
         )}
