@@ -382,18 +382,45 @@ export default async function MyTripDetailPage({
           countLabel="يوم · انقري للعرض"
         >
           <div className="space-y-3">
-            {trip.itinerary.map((d, i) => (
-              <div
-                key={i}
-                className="border-r-2 border-coral/30 pr-4 py-2"
-              >
-                <div className="text-xs font-bold text-coral">{d.day}</div>
-                <h3 className="text-lg font-black text-ink mt-0.5">
-                  {d.title}
-                </h3>
-                <p className="text-sm text-ink/70 mt-1">{d.desc}</p>
-              </div>
-            ))}
+            {trip.itinerary.map((d, i) => {
+              // Each itinerary item maps to start_date + i days. We
+              // parse start_date as local time (00:00) so getDate() on
+              // each addition yields the correct calendar day no matter
+              // the visitor's timezone.
+              const dateLabel = trip.start_date
+                ? (() => {
+                    const start = new Date(`${trip.start_date}T00:00:00`);
+                    const day = new Date(
+                      start.getTime() + i * 86_400_000,
+                    );
+                    const dd = String(day.getDate()).padStart(2, "0");
+                    const mm = String(day.getMonth() + 1).padStart(2, "0");
+                    return `${dd}.${mm}.${day.getFullYear()}`;
+                  })()
+                : null;
+              return (
+                <div
+                  key={i}
+                  className="border-r-2 border-coral/30 pr-4 py-2"
+                >
+                  <div className="flex items-center gap-2 text-xs font-bold">
+                    <span className="text-coral">{d.day}</span>
+                    {dateLabel && (
+                      <>
+                        <span className="text-ink/25">·</span>
+                        <span className="text-ink/55 tabular-nums">
+                          <bdi>{dateLabel}</bdi>
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <h3 className="text-lg font-black text-ink mt-0.5">
+                    {d.title}
+                  </h3>
+                  <p className="text-sm text-ink/70 mt-1">{d.desc}</p>
+                </div>
+              );
+            })}
           </div>
         </CollapsibleCompanionSection>
       )}
