@@ -109,7 +109,10 @@ export default async function AccountHomePage({
   // Compute reminder banners
   const reminders = computeReminders(bookings);
 
-  const waMessage = `أهلاً يا فريق SeeYa، معكِ ${profile?.full_name ?? ""}`;
+  const clientName = (profile?.full_name ?? "").trim();
+  const waMessage = clientName
+    ? `مرحبا فريق سيا، معكِ ${clientName}`
+    : `مرحبا فريق سيا`;
 
   return (
     <div className="space-y-8" dir="rtl">
@@ -185,7 +188,11 @@ export default async function AccountHomePage({
               تصفحي الرحلات
             </Link>
             <a
-              href={waLink("مرحبا، حابة احجز رحلة 🌍")}
+              href={waLink(
+                clientName
+                  ? `مرحبا فريق سيا، معكِ ${clientName} — حابة احجز رحلة 🌍`
+                  : `مرحبا فريق سيا — حابة احجز رحلة 🌍`,
+              )}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
@@ -399,9 +406,7 @@ function PaymentStatus({ booking }: { booking: BookingWithTrip }) {
             </bdi>
           </p>
           <a
-            href={waLink(
-              `بدي أدفع باقي رحلة ${booking.trip?.name ?? ""}`,
-            )}
+            href={waLink(buildPaymentMessage(booking, "remainder"))}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-xs font-bold text-coral hover:underline"
@@ -429,7 +434,7 @@ function PaymentStatus({ booking }: { booking: BookingWithTrip }) {
         — كلميني وبنرتّب طريقة الدفع.
       </p>
       <a
-        href={waLink(`بدي أدفع مقدّم رحلة ${booking.trip?.name ?? ""}`)}
+        href={waLink(buildPaymentMessage(booking, "deposit"))}
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center justify-center gap-2 self-start px-4 py-2.5 rounded-full text-sm font-bold text-white bg-coral hover:brightness-110 transition-all shadow-[0_6px_18px_-6px_rgba(255,90,74,0.55)]"
@@ -623,4 +628,24 @@ function computeReminders(bookings: BookingWithTrip[]): Reminder[] {
   }
 
   return out;
+}
+
+/**
+ * Build the WhatsApp pre-filled message for a payment CTA so SANDO
+ * receives a friendly self-introducing line ("مرحبا فريق سيا، معكِ
+ * {name} — بدي أدفع …") instead of a context-less request. Falls back
+ * gracefully when the booking has no client_name on file.
+ */
+function buildPaymentMessage(
+  booking: BookingWithTrip,
+  kind: "deposit" | "remainder",
+): string {
+  const name = (booking.client_name ?? "").trim();
+  const tripName = booking.trip?.name ?? "";
+  const intro = name ? `مرحبا فريق سيا، معكِ ${name}` : `مرحبا فريق سيا`;
+  const tail =
+    kind === "deposit"
+      ? `بدي أدفع مقدّم رحلة ${tripName}`
+      : `بدي أدفع باقي رحلة ${tripName}`;
+  return `${intro} — ${tail}`;
 }

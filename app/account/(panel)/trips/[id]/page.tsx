@@ -137,7 +137,14 @@ export default async function MyTripDetailPage({
     flightOverride: booking.flight_override?.outbound,
   });
 
-  const waMessage = `أهلاً يا SeeYa، أنا حاجز${"ة"} رحلة ${trip.name} وعندي سؤال`;
+  // Pre-fill the WhatsApp message so SANDO receives a clear
+  // self-introduction instead of an anonymous question.
+  const clientName = (booking.client_name ?? "").trim();
+  const intro = clientName
+    ? `مرحبا فريق سيا، معكِ ${clientName}`
+    : `مرحبا فريق سيا`;
+  const waMessage = `${intro} — عندي سؤال عن رحلة ${trip.name}`;
+  const waPaymentRemainderMessage = `${intro} — بدي أدفع باقي رحلة ${trip.name}`;
 
   return (
     <div className="space-y-8" dir="rtl">
@@ -223,7 +230,7 @@ export default async function MyTripDetailPage({
               <bdi>{formatBookingPrice(remaining, booking.currency)}</bdi>
             </p>
             <a
-              href={waLink(`بدي أدفع باقي رحلة ${trip.name}`)}
+              href={waLink(waPaymentRemainderMessage)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-coral text-sm font-bold hover:underline"
