@@ -14,6 +14,7 @@ import {
 import { formatPrice, type Trip } from "./data";
 import { waLink } from "@/lib/contact";
 import WaitlistFormModal from "./WaitlistFormModal";
+import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 
 const statusColor: Record<Trip["status"], string> = {
   live: "bg-emerald-500 text-white",
@@ -107,14 +108,17 @@ function WhatsAppGlyph({ size = 22 }: { size?: number }) {
 }
 
 export default function TripModal({ trip, onClose }: Props) {
+  // Stack-aware scroll lock — shares state with any modal opened on
+  // top (e.g. WaitlistFormModal) so closing the inner one doesn't
+  // unlock the page while this one is still on screen.
+  useBodyScrollLock(Boolean(trip));
+
   useEffect(() => {
     if (!trip) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     document.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
     };
   }, [trip, onClose]);
 

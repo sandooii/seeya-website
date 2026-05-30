@@ -14,6 +14,7 @@ import {
   joinWaitlistBySlug,
   type JoinWaitlistResult,
 } from "@/app/actions/waitlist";
+import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 
 const initialState: JoinWaitlistResult = { ok: true };
 
@@ -42,21 +43,32 @@ export default function WaitlistFormModal({
   const boundAction = joinWaitlistBySlug.bind(null, tripSlug);
   const [state, action, pending] = useActionState(boundAction, initialState);
 
-  // Lock body scroll while modal is open and close on Esc.
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    document.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
-  }, [open]);
-
   // Reset open state when the user starts a fresh submission cycle
   // (e.g. they got an error, fixed it, and clicked outside to close).
   const success = state.ok === true && !pending && state !== initialState;
+
+  // Stack-aware scroll lock: shares state with other open modals so
+  // closing this one doesn't unlock the page when TripModal is still
+  // on top.
+  useBodyScrollLock(open);
+
+  // Esc closes the modal.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) =>
+      e.key === "Escape" && !pending && setOpen(false);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, pending]);
+
+  // Auto-close the success state after a beat so the client doesn't
+  // have to hunt for the close button on a small phone. We still keep
+  // the manual 'خلصت' button as the explicit affordance.
+  useEffect(() => {
+    if (!success) return;
+    const id = window.setTimeout(() => setOpen(false), 2500);
+    return () => window.clearTimeout(id);
+  }, [success]);
 
   const err = (n: string) =>
     state.ok === false ? state.fieldErrors?.[n] : undefined;
