@@ -6,13 +6,6 @@ import { Sparkles } from "lucide-react";
 import type { Trip } from "./data";
 import { tripDepartureMs } from "@/lib/trip-departure";
 
-/**
- * Fallback used only if the trip row is missing or has no start_date.
- * The real countdown TARGET is derived from trip.startDate inside the
- * component so it always tracks the actual trip date in the DB.
- */
-const FALLBACK_TARGET = new Date("2026-06-25T00:00:00").getTime();
-
 type Tick = { d: number; h: number; m: number; s: number; gone: boolean };
 
 function diff(target: number): Tick {
@@ -239,17 +232,20 @@ export default function Countdown({ trip }: { trip: Trip | null }) {
   const isSoldOut = trip?.status === "sold-out" || available === 0;
 
   // Derive the countdown TARGET from the trip's flight departure
-  // moment (start_date + companion outbound time). Falls back to the
-  // hardcoded date only when the trip row is absent. Computed via the
-  // shared helper so the public countdown and the client-account
-  // countdown can never disagree.
-  const target =
-    tripDepartureMs({
-      startDate: trip?.startDate ?? null,
-      companion: trip?.companion ?? null,
-    }) ?? FALLBACK_TARGET;
+  // moment (start_date + companion outbound time) via the shared
+  // helper, so the public countdown and the client-account countdown
+  // can never disagree. When nothing usable is known (the rare case
+  // where the trip row is missing or has no dates yet) we render a
+  // "بنعلن قريباً" placeholder instead of fake digits — chasing a
+  // hardcoded fallback created a visual inconsistency between the
+  // real trip date in admin and what the public site showed.
+  const target = tripDepartureMs({
+    startDate: trip?.startDate ?? null,
+    companion: trip?.companion ?? null,
+  });
 
   useEffect(() => {
+    if (target == null) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- diff() depends on Date.now() and cannot run during render; mount-only setup is intentional
     setT(diff(target));
     const id = setInterval(() => setT(diff(target)), 1000);
@@ -328,32 +324,48 @@ export default function Countdown({ trip }: { trip: Trip | null }) {
           · {isSoldOut ? "نفدت المقاعد — قائمة الانتظار مفتوحة" : "باقي أماكن محدودة"}
         </motion.p>
 
-        <div
-          className="mt-10 grid grid-cols-4 gap-3 md:gap-5 max-w-3xl mx-auto"
-          dir="rtl"
-        >
-          {(["d", "h", "m", "s"] as const).map((k, i) => (
-            <motion.div
-              key={k}
-              initial={{ y: 30, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
-              className="bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.25)]"
-            >
-              <div
-                dir="ltr"
-                lang="en"
-                className="text-3xl md:text-5xl lg:text-6xl font-black tabular-nums leading-none"
+        {target != null ? (
+          <div
+            className="mt-10 grid grid-cols-4 gap-3 md:gap-5 max-w-3xl mx-auto"
+            dir="rtl"
+          >
+            {(["d", "h", "m", "s"] as const).map((k, i) => (
+              <motion.div
+                key={k}
+                initial={{ y: 30, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
+                className="bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.25)]"
               >
-                {String(t[k]).padStart(2, "0")}
-              </div>
-              <div className="mt-2 text-xs md:text-sm uppercase tracking-[0.2em] text-white/85 font-semibold">
-                {labels[k]}
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                <div
+                  dir="ltr"
+                  lang="en"
+                  className="text-3xl md:text-5xl lg:text-6xl font-black tabular-nums leading-none"
+                >
+                  {String(t[k]).padStart(2, "0")}
+                </div>
+                <div className="mt-2 text-xs md:text-sm uppercase tracking-[0.2em] text-white/85 font-semibold">
+                  {labels[k]}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          // No usable date in the DB — show a calm "to be announced"
+          // pill instead of bogus countdown digits.
+          <motion.div
+            initial={{ y: 30, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="mt-10 mx-auto max-w-md bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl px-6 py-5 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.25)]"
+          >
+            <p className="text-base md:text-lg font-bold text-white">
+              ✨ موعد الإقلاع — بنعلن قريباً
+            </p>
+          </motion.div>
+        )}
 
         <SeatsVisualizer
           booked={booked}

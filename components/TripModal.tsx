@@ -15,6 +15,7 @@ import { formatPrice, type Trip } from "./data";
 import { waLink } from "@/lib/contact";
 import WaitlistFormModal from "./WaitlistFormModal";
 import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
+import { useFocusTrap } from "@/lib/use-focus-trap";
 
 const statusColor: Record<Trip["status"], string> = {
   live: "bg-emerald-500 text-white",
@@ -113,6 +114,11 @@ export default function TripModal({ trip, onClose }: Props) {
   // unlock the page while this one is still on screen.
   useBodyScrollLock(Boolean(trip));
 
+  // Trap keyboard focus inside the dialog so Tab doesn't escape to
+  // the page underneath — important for screen-reader and keyboard
+  // users. Focus returns to the trigger element on close.
+  const dialogRef = useFocusTrap<HTMLDivElement>(Boolean(trip));
+
   useEffect(() => {
     if (!trip) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -135,9 +141,13 @@ export default function TripModal({ trip, onClose }: Props) {
           transition={{ duration: 0.3 }}
           onClick={onClose}
           data-lenis-prevent="true"
+          role="dialog"
+          aria-modal="true"
+          aria-label={trip.name}
           className="fixed inset-0 z-[80] bg-ink/70 backdrop-blur-md grid place-items-end md:place-items-center p-0 md:p-6"
         >
           <motion.div
+            ref={dialogRef}
             onClick={(e) => e.stopPropagation()}
             initial={{ y: "100%", opacity: 0.6 }}
             animate={{ y: 0, opacity: 1 }}
@@ -358,14 +368,12 @@ function ThailandBody({
             href={waLink(`بدي أحجز رحلة ${trip.name} 🌍`)}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full flex items-center justify-center gap-3 py-4 rounded-full font-bold text-white text-base transition-all duration-300"
-            style={{ backgroundColor: "#F95C6B" }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#25D366";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "#F95C6B";
-            }}
+            // Coral by default, WhatsApp green on hover. Both colors go
+            // through Tailwind arbitrary classes so we avoid the inline
+            // onMouseEnter/onMouseLeave swap that caused a first-paint
+            // flicker (the inline style won the cascade for a frame
+            // before React attached the listeners).
+            className="w-full flex items-center justify-center gap-3 py-4 rounded-full font-bold text-white text-base transition-colors duration-300 bg-[#F95C6B] hover:bg-[#25D366]"
           >
             <WhatsAppGlyph />
             احجزي مكانكِ على واتساب

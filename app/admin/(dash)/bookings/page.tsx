@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Plus, Edit3, Search, Phone, Mail } from "lucide-react";
+import { Plus, Edit3, Search, Phone, Mail, BookOpen } from "lucide-react";
+import EmptyState from "@/components/admin/EmptyState";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { BookingStatus } from "@/lib/supabase/types";
 import {
@@ -324,13 +325,22 @@ export default async function BookingsAdminPage({
               })}
               {list.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={6}
-                    className="px-4 py-12 text-center text-ink/40"
-                  >
-                    {q || tripFilter || statusFilter
-                      ? "لا توجد حجوزات تطابق الفلاتر."
-                      : "لا توجد حجوزات بعد. أضيفي أول حجز!"}
+                  <td colSpan={6} className="p-0">
+                    {q || tripFilter || statusFilter ? (
+                      <EmptyState
+                        icon={BookOpen}
+                        title="ما في نتائج مطابقة"
+                        description="جرّبي تشيلي بعض الفلاتر أو غيّري كلمة البحث."
+                      />
+                    ) : (
+                      <EmptyState
+                        icon={BookOpen}
+                        title="لا توجد حجوزات بعد"
+                        description="سجّلي أول حجز يدوياً، وإلا انتظري لما العميلات يحجزن من الموقع — رح تظهر هون مباشرة."
+                        primaryHref="/admin/bookings/new"
+                        primaryLabel="إضافة حجز جديد"
+                      />
+                    )}
                   </td>
                 </tr>
               )}

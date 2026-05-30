@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { convertBookingToClient } from "./actions";
 import { waLink } from "@/lib/contact";
+import { useFocusTrap } from "@/lib/use-focus-trap";
 
 type Result =
   | {
@@ -40,6 +41,7 @@ export default function ConvertToClientButton({
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<Result | null>(null);
+  const dialogRef = useFocusTrap<HTMLDivElement>(open);
 
   if (hasAccount) {
     return (
@@ -99,6 +101,7 @@ export default function ConvertToClientButton({
             onClick={() => !pending && setOpen(false)}
           />
           <div
+            ref={dialogRef}
             className="relative bg-white rounded-3xl shadow-2xl max-w-lg w-full p-7 text-right"
             dir="rtl"
           >

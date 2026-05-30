@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { Trash2, X, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { deleteClient } from "./actions";
+import { useFocusTrap } from "@/lib/use-focus-trap";
 
 export default function DeleteClientButton({
   clientId,
@@ -18,6 +19,7 @@ export default function DeleteClientButton({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+  const dialogRef = useFocusTrap<HTMLDivElement>(open);
 
   const handleDelete = () => {
     setError(null);
@@ -54,6 +56,7 @@ export default function DeleteClientButton({
             onClick={() => !pending && setOpen(false)}
           />
           <div
+            ref={dialogRef}
             className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full p-7 text-right"
             dir="rtl"
           >

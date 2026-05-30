@@ -15,6 +15,7 @@ import {
   type JoinWaitlistResult,
 } from "@/app/actions/waitlist";
 import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
+import { useFocusTrap } from "@/lib/use-focus-trap";
 
 const initialState: JoinWaitlistResult = { ok: true };
 
@@ -51,6 +52,10 @@ export default function WaitlistFormModal({
   // closing this one doesn't unlock the page when TripModal is still
   // on top.
   useBodyScrollLock(open);
+
+  // Trap Tab focus inside the dialog while it's open + restore focus
+  // to the trigger button on close.
+  const dialogRef = useFocusTrap<HTMLDivElement>(open);
 
   // Esc closes the modal.
   useEffect(() => {
@@ -93,6 +98,7 @@ export default function WaitlistFormModal({
         >
           <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" />
           <div
+            ref={dialogRef}
             onClick={(e) => e.stopPropagation()}
             className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 md:p-7 text-right my-auto"
             dir="rtl"

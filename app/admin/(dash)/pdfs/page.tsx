@@ -5,6 +5,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { TripRow } from "@/lib/supabase/types";
 import { getTripPdfUrl } from "@/lib/pdfs";
 import PdfUpload from "@/components/admin/PdfUpload";
+import EmptyState from "@/components/admin/EmptyState";
 
 export const metadata = { title: "الملفات — Admin" };
 
@@ -127,12 +128,14 @@ export default async function PdfsAdminPage() {
         })}
 
         {list.length === 0 && (
-          <div className="bg-white rounded-3xl border border-ink/5 p-12 text-center text-ink/40">
-            لا توجد رحلات بعد. أضيفي رحلة أولاً من{" "}
-            <Link href="/admin/trips" className="text-coral hover:underline">
-              صفحة الرحلات
-            </Link>
-            .
+          <div className="bg-white rounded-3xl border border-ink/5">
+            <EmptyState
+              icon={FileText}
+              title="لا توجد رحلات بعد"
+              description="ملفات الرحلات (PDF) بتنرفق على الرحلة نفسها — أضيفي رحلة أولاً وبعدها بتقدري ترفعي PDF لها."
+              primaryHref="/admin/trips/new"
+              primaryLabel="إضافة أول رحلة"
+            />
           </div>
         )}
       </div>

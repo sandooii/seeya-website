@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Plus, Edit3, Mail, Phone, MessageCircle } from "lucide-react";
+import { Plus, Edit3, Mail, Phone, MessageCircle, Users } from "lucide-react";
+import EmptyState from "@/components/admin/EmptyState";
 import {
   createServerSupabaseClient,
   createServiceRoleClient,
@@ -242,11 +243,14 @@ export default async function ClientsAdminPage() {
               })}
               {clients.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={6}
-                    className="px-4 py-12 text-center text-ink/40"
-                  >
-                    لا توجد عميلات مسجّلات بعد. اضغطي &quot;إضافة عميلة&quot; لإنشاء أول حساب.
+                  <td colSpan={6} className="p-0">
+                    <EmptyState
+                      icon={Users}
+                      title="لا توجد عميلات بعد"
+                      description="أنشئي أول حساب عميلة برقم تلفون وكلمة سر — أو حوّلي حجزاً موجوداً لحساب من صفحة الحجوزات."
+                      primaryHref="/admin/clients/new"
+                      primaryLabel="إضافة عميلة جديدة"
+                    />
                   </td>
                 </tr>
               )}

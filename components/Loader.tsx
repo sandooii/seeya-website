@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -15,6 +15,12 @@ export default function Loader() {
 
   const [visible, setVisible] = useState(!skipOnRoute);
   const [typed, setTyped] = useState(0);
+
+  // Remember what overflow was BEFORE we touched it so we can put it
+  // back instead of blanking out a value the page might have set.
+  // Using a ref keeps the value across the lock/unlock cycle without
+  // triggering re-renders.
+  const previousOverflowRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -38,6 +44,11 @@ export default function Loader() {
       return;
     }
 
+    // Lock html overflow ONCE we know the splash will actually render.
+    // We deliberately avoid touching overflow on skip paths — touching
+    // and then restoring "" can clobber any value the host page set
+    // before we mounted.
+    previousOverflowRef.current = document.documentElement.style.overflow;
     document.documentElement.style.overflow = "hidden";
 
     const typeInterval = setInterval(() => {
@@ -58,20 +69,25 @@ export default function Loader() {
     return () => {
       clearInterval(typeInterval);
       clearTimeout(hideTimer);
-      document.documentElement.style.overflow = "";
     };
     // skipOnRoute changes when the route does — but the loader is a
     // one-shot landing animation; we only care about its value at mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Restore overflow exactly when the exit animation finishes and only
+  // if we were the ones who locked it. This pairs 1:1 with the lock
+  // above, eliminating the prior race where both useEffects could race
+  // to write "" into overflow.
   useEffect(() => {
-    if (!visible && typeof window !== "undefined") {
-      const t = setTimeout(() => {
-        document.documentElement.style.overflow = "";
-      }, 950);
-      return () => clearTimeout(t);
-    }
+    if (visible || typeof window === "undefined") return;
+    if (previousOverflowRef.current === null) return; // we never locked
+
+    const t = setTimeout(() => {
+      document.documentElement.style.overflow = previousOverflowRef.current ?? "";
+      previousOverflowRef.current = null;
+    }, 950);
+    return () => clearTimeout(t);
   }, [visible]);
 
   const visibleText = TAGLINE.slice(0, typed);

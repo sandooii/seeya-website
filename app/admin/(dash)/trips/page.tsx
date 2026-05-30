@@ -1,9 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Plus, Edit3 } from "lucide-react";
+import { Plus, Edit3, Plane } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { TripRow, TripStatusDB, CurrencyCode } from "@/lib/supabase/types";
 import DeleteTripButton from "./DeleteTripButton";
+import EmptyState from "@/components/admin/EmptyState";
 
 export const metadata = { title: "الرحلات — Admin" };
 
@@ -157,11 +158,14 @@ export default async function TripsAdminPage() {
               ))}
               {(trips ?? []).length === 0 && (
                 <tr>
-                  <td
-                    colSpan={6}
-                    className="px-4 py-12 text-center text-ink/40"
-                  >
-                    لا توجد رحلات بعد. أضيفي أول رحلة!
+                  <td colSpan={6} className="p-0">
+                    <EmptyState
+                      icon={Plane}
+                      title="لا توجد رحلات بعد"
+                      description="ابدئي بإضافة أول رحلة — اسم، تاريخ، صور، وأماكن متاحة. بمجرد ما تنشريها بتظهر على الموقع."
+                      primaryHref="/admin/trips/new"
+                      primaryLabel="إضافة أول رحلة"
+                    />
                   </td>
                 </tr>
               )}

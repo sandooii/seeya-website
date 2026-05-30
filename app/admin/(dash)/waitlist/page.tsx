@@ -1,6 +1,15 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Plus, Edit3, Search, Phone, Mail, ArrowUpRight } from "lucide-react";
+import {
+  Plus,
+  Edit3,
+  Search,
+  Phone,
+  Mail,
+  ArrowUpRight,
+  Clock,
+} from "lucide-react";
+import EmptyState from "@/components/admin/EmptyState";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { WaitlistStatus } from "@/lib/supabase/types";
 import {
@@ -292,13 +301,22 @@ export default async function WaitlistAdminPage({
               })}
               {entries.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="px-4 py-12 text-center text-ink/40"
-                  >
-                    {q || tripFilter || statusFilter
-                      ? "لا توجد إدخالات تطابق الفلاتر."
-                      : "لا توجد إدخالات في قائمة الانتظار بعد. أضيفي أول إدخال!"}
+                  <td colSpan={5} className="p-0">
+                    {q || tripFilter || statusFilter ? (
+                      <EmptyState
+                        icon={Clock}
+                        title="ما في نتائج مطابقة"
+                        description="جرّبي تشيلي بعض الفلاتر أو غيّري كلمة البحث."
+                      />
+                    ) : (
+                      <EmptyState
+                        icon={Clock}
+                        title="ما في قائمة انتظار بعد"
+                        description="لما الرحلات تمتلئ، العميلات بقدرن يسجلن بقائمة الانتظار من الموقع — وأنتي بقدري تضيفي يدوي من هون."
+                        primaryHref="/admin/waitlist/new"
+                        primaryLabel="إضافة إدخال جديد"
+                      />
+                    )}
                   </td>
                 </tr>
               )}
