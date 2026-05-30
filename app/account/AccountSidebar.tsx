@@ -12,6 +12,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 
 type NavItem = {
   href: string;
@@ -50,13 +51,9 @@ export default function AccountSidebar({
     setOpen(false);
   }, [pathname]);
 
-  useEffect(() => {
-    if (!open) return;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
+  // Stack-aware scroll lock — shares state with any modal opened on top
+  // so closing this drawer doesn't unlock the page while a modal is open.
+  useBodyScrollLock(open);
 
   return (
     <>

@@ -14,6 +14,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 
 type NavItem = {
   href: string;
@@ -56,13 +57,8 @@ export default function AdminSidebar({
   }, [pathname]);
 
   // Lock body scroll while the drawer is open on mobile.
-  useEffect(() => {
-    if (!open) return;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
+  // Stack-aware scroll lock — shares state with any modal opened on top.
+  useBodyScrollLock(open);
 
   return (
     <>
