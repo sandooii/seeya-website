@@ -249,20 +249,21 @@ export default async function MyTripDetailPage({
         </a>
       </section>
 
-      {/* Flights — resolve per-booking override over trip default */}
+      {/* Flights — merge the per-booking override on top of the trip
+          default field-by-field, so a client who only had her *time*
+          overridden still sees the trip's airport names, airline,
+          notes, etc. This keeps the card layout identical for every
+          client — they all see the same set of fields, only the values
+          differ where the admin chose to personalize. */}
       {(() => {
-        const outbound =
-          (hasFlight(booking.flight_override?.outbound)
-            ? booking.flight_override?.outbound
-            : null) ??
-          (hasFlight(companion.flight) ? companion.flight : null);
-        const returnFlight =
-          (hasFlight(booking.flight_override?.return_flight)
-            ? booking.flight_override?.return_flight
-            : null) ??
-          (hasFlight(companion.return_flight)
-            ? companion.return_flight
-            : null);
+        const outbound = mergeFlight(
+          booking.flight_override?.outbound,
+          companion.flight,
+        );
+        const returnFlight = mergeFlight(
+          booking.flight_override?.return_flight,
+          companion.return_flight,
+        );
         const isOutboundOverride = hasFlight(
           booking.flight_override?.outbound,
         );
@@ -499,6 +500,39 @@ function hasFlight(f?: FlightInfo | null): f is FlightInfo {
       f.flight_number ||
       f.notes,
   );
+}
+
+/**
+ * Merge the per-booking flight override on top of the trip's default
+ * flight, field by field. Empty/missing fields in the override fall
+ * back to the corresponding default field — so the override behaves
+ * like a sparse patch rather than a full replacement.
+ *
+ * This guarantees every client sees the SAME set of fields on her
+ * trip page (airline, time, notes, airport names, ...). Only the
+ * values she overrode actually differ from the group default.
+ *
+ * Returns null when neither side has any useful data.
+ */
+function mergeFlight(
+  override?: FlightInfo | null,
+  defaultFlight?: FlightInfo | null,
+): FlightInfo | null {
+  const pick = <K extends keyof FlightInfo>(key: K) =>
+    override?.[key] || defaultFlight?.[key];
+  const merged: FlightInfo = {
+    departure_date: pick("departure_date"),
+    departure_time: pick("departure_time"),
+    departure_airport: pick("departure_airport"),
+    departure_airport_name: pick("departure_airport_name"),
+    arrival_airport: pick("arrival_airport"),
+    arrival_airport_name: pick("arrival_airport_name"),
+    airline: pick("airline"),
+    flight_number: pick("flight_number"),
+    duration: pick("duration"),
+    notes: pick("notes"),
+  };
+  return hasFlight(merged) ? merged : null;
 }
 
 function OverrideBadge() {
