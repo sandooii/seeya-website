@@ -25,74 +25,14 @@ const statusColor: Record<Trip["status"], string> = {
   "sold-out": "bg-ink text-white",
 };
 
-// Hardcoded fallback content for the Thailand modal — only used when
-// `trip.companion_content` is empty in Supabase. Once SANDO seeds the
-// companion editor at /admin/trips/[id]/companion, those values take
-// over and admin edits show up live.
-const THAILAND_ACTIVITIES_FALLBACK = [
-  "🚢 إبحار في خليج جيمس بوند — يخت خاص",
-  "🏝️ جزر في في و Maya Bay — يخت فاخر",
-  "🌊 أنداماندا — مدينة الملاهي المائية",
-  "🏛️ City Tour — البلدة القديمة + معبد تشالونغ",
-  "✨ عرض فانتازيا — ليلة السحر",
-];
-
-const THAILAND_HIGHLIGHTS_FALLBACK = [
-  "5 فعاليات منظمة",
-  "4 أيام حرة للراحة",
-  "دعم ومرافقة 24/7",
-];
-
-const THAILAND_FLIGHT_FALLBACK = [
-  "✈️ الإقلاع: تل أبيب 26.06 — الساعة 00:40",
-  "✈️ الوصول: بوكيت 26.06 — الساعة 20:05",
-  "🧳 الأمتعة: ترولي 8 كيلو + حقيبة 23 كيلو",
-];
-
-/**
- * Turn the (potentially partial) companion recommendations list into
- * the flat strings the activity section renders. We accept either a
- * string array (legacy seed) or the structured RecommendationItem[]
- * shape from the admin editor.
- */
-function companionActivities(trip: Trip): string[] {
-  const recs = trip.companion?.recommendations;
-  if (!recs || recs.length === 0) return [];
-  return recs.map((r) =>
-    r.description ? `${r.title} — ${r.description}` : r.title,
-  );
-}
-
-/**
- * Format the structured FlightInfo into the existing
- * emoji-prefixed bullet list. Returns an empty array when nothing
- * was entered (and the caller should fall back to the seeded copy).
- */
-function companionFlightLines(trip: Trip): string[] {
-  const f = trip.companion?.flight;
-  if (!f) return [];
-  const lines: string[] = [];
-  const depTime = [f.departure_date, f.departure_time]
-    .filter(Boolean)
-    .join(" — ");
-  if (f.departure_airport_name || depTime) {
-    lines.push(
-      `✈️ الإقلاع${f.departure_airport_name ? `: ${f.departure_airport_name}` : ""}${depTime ? ` ${depTime}` : ""}`.trim(),
-    );
-  }
-  if (f.arrival_airport_name) {
-    lines.push(`✈️ الوصول: ${f.arrival_airport_name}`);
-  }
-  if (f.airline || f.flight_number) {
-    lines.push(
-      `🛫 ${[f.airline, f.flight_number].filter(Boolean).join(" · ")}`,
-    );
-  }
-  if (f.notes) {
-    lines.push(`🧳 ${f.notes}`);
-  }
-  return lines;
-}
+// The Thailand-specific fallbacks (activities, highlights, flight
+// info) and their companion-* helpers used to render gated paid
+// content (daily program, restaurants, flight numbers, prep
+// checklist) inside the PUBLIC trip modal. That leaked everything
+// SeeYa charges for to anyone who clicked the trip card. The whole
+// stack was removed — the modal now shows only photos, price, and
+// what's included; everything else lives in the authenticated
+// client portal at /account/trips/[id].
 
 type Props = {
   trip: Trip | null;
@@ -208,22 +148,16 @@ function ThailandBody({
   trip: Trip;
   priceLabel: string | null;
 }) {
-  // Prefer admin-edited companion_content; only fall back to the
-  // hardcoded seed if nothing has been entered yet.
-  const activitiesFromDb = companionActivities(trip);
-  const activities =
-    activitiesFromDb.length > 0
-      ? activitiesFromDb
-      : THAILAND_ACTIVITIES_FALLBACK;
-
-  const highlights =
-    trip.companion?.tips && trip.companion.tips.length > 0
-      ? trip.companion.tips
-      : THAILAND_HIGHLIGHTS_FALLBACK;
-
-  const flightFromDb = companionFlightLines(trip);
-  const flightLines =
-    flightFromDb.length > 0 ? flightFromDb : THAILAND_FLIGHT_FALLBACK;
+  // NOTE: We deliberately do NOT surface companion_content (daily
+  // itinerary, restaurant picks, prep checklist, exact flight times,
+  // local activity bookings, warnings) on the public modal. Those
+  // fields are paid content that belong to the client portal
+  // (/account/trips/[id]) and only become visible once a booking is
+  // attached to the visitor. Showing them publicly would leak the
+  // value SANDO builds into every trip — anyone could pull the
+  // itinerary, restaurant list, and flight number without booking.
+  // Public visitors see: photos, price, what's included, the
+  // booking CTA. Everything else stays gated.
 
   return (
     <div
@@ -298,56 +232,10 @@ function ThailandBody({
         </ul>
       </Section>
 
-      {/* D) ACTIVITIES */}
-      <Section title="الفعاليات المنظمة">
-        <ol className="space-y-2.5 list-none">
-          {activities.map((act, i) => (
-            <li
-              key={i}
-              className="flex items-start gap-3 text-ink/85"
-            >
-              <span
-                className="grid place-items-center w-6 h-6 rounded-full text-white text-xs font-black shrink-0"
-                style={{ backgroundColor: "#F95C6B" }}
-              >
-                {i + 1}
-              </span>
-              <span className="text-sm leading-relaxed">{act}</span>
-            </li>
-          ))}
-        </ol>
-      </Section>
-
-      {/* E) ITINERARY SUMMARY */}
-      <Section title="11 يوم مليانة حياة">
-        <ul className="space-y-2.5">
-          {highlights.map((line, i) => (
-            <li
-              key={i}
-              className="flex items-start gap-2.5 text-ink/85"
-            >
-              <span className="grid place-items-center w-5 h-5 rounded-full bg-coral/15 text-coral mt-0.5 shrink-0">
-                <Check size={12} strokeWidth={3} />
-              </span>
-              <span className="text-sm leading-relaxed">{line}</span>
-            </li>
-          ))}
-        </ul>
-      </Section>
-
-      {/* F) FLIGHT INFO */}
-      <Section title="تفاصيل الطيران">
-        <ul className="space-y-2.5">
-          {flightLines.map((line, i) => (
-            <li
-              key={i}
-              className="text-sm leading-relaxed text-ink/85 bg-pale rounded-2xl px-4 py-2.5"
-            >
-              {line}
-            </li>
-          ))}
-        </ul>
-      </Section>
+      {/* Sections D (activities), E (itinerary highlights), and F
+          (flight info) were removed — see comment at the top of
+          ThailandBody for why. The booking CTA below remains the
+          path forward for visitors. */}
 
       {/* G) BUTTONS */}
       <div className="flex flex-col gap-3 mt-8">
@@ -468,44 +356,23 @@ function DefaultBody({
           {trip.blurb}
         </p>
 
-        <div className="grid md:grid-cols-2 gap-8 mb-8">
-          <div>
-            <h4 className="text-2xl font-black mb-4 text-ink">
-              البرنامج اليومي
-            </h4>
-            <ol className="space-y-4 relative">
-              <span className="absolute right-3 top-2 bottom-2 w-px bg-coral/25" />
-              {trip.itinerary.map((it, i) => (
-                <li key={i} className="relative pr-9">
-                  <span className="absolute right-0 top-1 grid place-items-center w-6 h-6 rounded-full bg-coral text-white text-xs font-black">
-                    {i + 1}
-                  </span>
-                  <div className="text-coral text-xs font-bold tracking-widest mb-0.5">
-                    {it.day}
-                  </div>
-                  <div className="font-bold text-ink">{it.title}</div>
-                  <p className="text-sm text-ink/70 mt-1">{it.desc}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
-
-          <div>
-            <h4 className="text-2xl font-black mb-4 text-ink">شو بشمل السعر</h4>
-            <ul className="space-y-2.5">
-              {trip.includes.map((x, i) => (
-                <li
-                  key={i}
-                  className="flex items-start gap-2.5 text-ink/85"
-                >
-                  <span className="grid place-items-center w-5 h-5 rounded-full bg-coral/15 text-coral mt-0.5 shrink-0">
-                    <Check size={12} strokeWidth={3} />
-                  </span>
-                  <span className="text-sm leading-relaxed">{x}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+        {/* Detailed daily itinerary was removed from the public modal
+            — same reasoning as the Thailand body: trip.itinerary is
+            paid content that belongs to the authenticated client
+            portal, not the public surface. "شو بشمل السعر" stays
+            because it's sales information visitors need to evaluate. */}
+        <div className="mb-8">
+          <h4 className="text-2xl font-black mb-4 text-ink">شو بشمل السعر</h4>
+          <ul className="space-y-2.5">
+            {trip.includes.map((x, i) => (
+              <li key={i} className="flex items-start gap-2.5 text-ink/85">
+                <span className="grid place-items-center w-5 h-5 rounded-full bg-coral/15 text-coral mt-0.5 shrink-0">
+                  <Check size={12} strokeWidth={3} />
+                </span>
+                <span className="text-sm leading-relaxed">{x}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 
