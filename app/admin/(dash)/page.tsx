@@ -11,6 +11,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import type { BookingStatus, CurrencyCode } from "@/lib/supabase/types";
+import TodaysActions from "./TodaysActions";
 
 type BookingStatsRow = {
   status: BookingStatus;
@@ -184,6 +185,9 @@ export default async function AdminDashboardPage() {
         </h1>
         <p className="text-ink/60 mt-2 text-base md:text-lg">نظرة سريعة على المنصة</p>
       </header>
+
+      {/* CRM #3: actionable to-do list shown above the stats */}
+      <TodaysActions />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => {

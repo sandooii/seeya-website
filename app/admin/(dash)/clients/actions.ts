@@ -94,6 +94,7 @@ export async function inviteClient(
   //    we don't surface the synthetic <phone>@seeya.app value to admin
   //    or to the client.
   const profileEmail = rawEmail || null;
+  const adminNotes = String(formData.get("admin_notes") ?? "").trim() || null;
   const { error: profileError } = await admin
     .from("profiles")
     .update({
@@ -101,6 +102,7 @@ export async function inviteClient(
       phone,
       email: profileEmail,
       role: "client",
+      admin_notes: adminNotes,
     })
     .eq("id", userId);
 
@@ -154,10 +156,12 @@ export async function updateClient(
 
   if (Object.keys(fieldErrors).length > 0) return { fieldErrors };
 
+  const adminNotes = String(formData.get("admin_notes") ?? "").trim() || null;
+
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase
     .from("profiles")
-    .update({ full_name, phone })
+    .update({ full_name, phone, admin_notes: adminNotes })
     .eq("id", clientId);
 
   if (error) return { error: error.message };

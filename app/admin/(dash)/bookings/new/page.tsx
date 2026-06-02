@@ -44,6 +44,7 @@ export default async function NewBookingPage() {
         clients={clientsResult.data ?? []}
         action={createBooking}
         submitLabel="إنشاء الحجز"
+        showAutoCreate
       />
     </div>
   );

@@ -2,7 +2,7 @@
 
 import { useActionState, useMemo, useState } from "react";
 import Link from "next/link";
-import { Loader2, Link2 } from "lucide-react";
+import { Loader2, Link2, UserPlus, Sparkles } from "lucide-react";
 import type {
   BookingRow,
   CurrencyCode,
@@ -43,12 +43,18 @@ export default function BookingForm({
   clients,
   action,
   submitLabel,
+  /** True when used in /admin/bookings/new — shows the auto-create
+   *  client account checkbox. Edit screens hide it (the booking
+   *  either already has an account or admin can convert via the
+   *  separate ConvertToClientButton). */
+  showAutoCreate = false,
 }: {
   booking?: BookingRow;
   trips: TripOption[];
   clients: ClientOption[];
   action: Action;
   submitLabel: string;
+  showAutoCreate?: boolean;
 }) {
   const [state, formAction, isPending] = useActionState(action, initialState);
 
@@ -69,6 +75,10 @@ export default function BookingForm({
   const [clientEmail, setClientEmail] = useState<string>(
     booking?.client_email ?? "",
   );
+
+  // Auto-create client account checkbox — ON by default when phone exists
+  // and the booking isn't linked. Hidden on edit screens via showAutoCreate.
+  const [createAccount, setCreateAccount] = useState(true);
 
   const handleClientPick = (newId: string) => {
     setClientId(newId);
@@ -189,6 +199,46 @@ export default function BookingForm({
           />
         </Field>
       </Section>
+
+      {/* ─── Auto-create account (new bookings only, when not already linked) ─── */}
+      {showAutoCreate && !clientId && (
+        <section className="bg-gradient-to-br from-coral/8 to-coral/4 rounded-3xl border-2 border-coral/20 p-6 md:p-7">
+          <label className="flex items-start gap-4 cursor-pointer group">
+            <input
+              type="checkbox"
+              name="create_account"
+              checked={createAccount}
+              onChange={(e) => setCreateAccount(e.target.checked)}
+              className="mt-1 w-5 h-5 rounded accent-coral cursor-pointer shrink-0"
+            />
+            <div className="flex-1 space-y-1.5">
+              <div className="flex items-center gap-2">
+                <UserPlus size={18} className="text-coral" />
+                <h2 className="text-lg font-black text-ink">
+                  أنشئي حساب لهذه العميلة مباشرة{" "}
+                  <Sparkles
+                    size={14}
+                    className="inline -mt-1 text-coral"
+                  />
+                </h2>
+              </div>
+              <p className="text-sm text-ink/65">
+                بنخلق لها حساب على{" "}
+                <code className="bg-white/70 px-1.5 py-0.5 rounded text-coral text-xs">
+                  /login
+                </code>{" "}
+                — بيتها <strong>رقم تلفونها</strong> = اليوزر = الباسوورد.
+                بعد الحفظ بتقدري تبعتي بياناتها بضغطة واحدة.
+              </p>
+              <p className="text-xs text-ink/45 leading-relaxed">
+                اذا شيلتي العلامة، بتحفظ الحجز فقط — تقدري دائماً تنشئي
+                لها حساب لاحقاً من زر &quot;إنشاء حساب لهالعميلة&quot; بصفحة
+                التعديل.
+              </p>
+            </div>
+          </label>
+        </section>
+      )}
 
       {/* ─── Trip ─── */}
       <Section title="الرحلة والحالة">

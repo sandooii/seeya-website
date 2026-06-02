@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { Loader2, Mail, User, Phone, Info } from "lucide-react";
+import { Loader2, Mail, User, Phone, Info, StickyNote } from "lucide-react";
 import { type ClientFormState } from "./actions";
 
 type Action = (
@@ -16,6 +16,7 @@ export default function ClientForm({
   defaultName,
   defaultPhone,
   defaultEmail,
+  defaultAdminNotes,
   action,
   submitLabel,
   /** When true, the email field is editable (creating a new client). Otherwise read-only. */
@@ -24,6 +25,7 @@ export default function ClientForm({
   defaultName?: string;
   defaultPhone?: string;
   defaultEmail?: string;
+  defaultAdminNotes?: string;
   action: Action;
   submitLabel: string;
   editableEmail: boolean;
@@ -132,6 +134,29 @@ export default function ClientForm({
         {err("phone") && (
           <p className="text-xs text-red-600 font-semibold">{err("phone")}</p>
         )}
+      </div>
+
+      <div className="space-y-2">
+        <label className="block text-sm font-bold text-ink">
+          ملاحظات إدارية{" "}
+          <span className="font-normal text-ink/50">(للأدمن فقط)</span>
+        </label>
+        <div className="relative">
+          <StickyNote
+            size={18}
+            className="absolute right-3 top-3 text-ink/30"
+          />
+          <textarea
+            name="admin_notes"
+            defaultValue={defaultAdminNotes ?? ""}
+            rows={4}
+            className="w-full rounded-xl border border-ink/15 pr-10 pl-4 py-3 text-ink focus:outline-none focus:ring-2 focus:ring-coral/40 focus:border-coral/60 resize-y"
+            placeholder="مثل: غرفة منفصلة، طعام نباتي، أول مرة بتسافر، تحتاج اطمئنان..."
+          />
+        </div>
+        <p className="text-xs text-ink/45">
+          ملاحظاتك لذكر التفاصيل المهمة عنها. العميلة ما بتشوفها.
+        </p>
       </div>
 
       {state.error && (

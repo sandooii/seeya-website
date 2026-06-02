@@ -189,13 +189,17 @@ export async function createBooking(
   if (!payload) return { error: "بيانات الفورم غير مكتملة" };
 
   const supabase = await createServerSupabaseClient();
-  const { error } = await supabase.from("bookings").insert(payload);
+  const { data: inserted, error } = await supabase
+    .from("bookings")
+    .insert(payload)
+    .select("id")
+    .single();
 
-  if (error) {
-    if (error.code === "23505") {
+  if (error || !inserted) {
+    if (error?.code === "23505") {
       return { error: "هذا الحجز موجود مسبقاً" };
     }
-    return { error: error.message };
+    return { error: error?.message ?? "تعذّر إنشاء الحجز" };
   }
 
   // If the booking is already active, decrement the trip's available spots
@@ -203,9 +207,38 @@ export async function createBooking(
     await adjustTripSpots(supabase, payload.trip_id, -1);
   }
 
+  // CRM #1 — Auto-create client account when admin checked the box
+  // AND the booking isn't already linked to an existing client AND
+  // we have a phone number to use as username/password.
+  // Errors here are non-fatal: the booking is already saved, so we
+  // surface the convert outcome via redirect query params so the
+  // next screen can either celebrate or show a recoverable warning.
+  const wantsAutoCreate =
+    String(formData.get("create_account") ?? "") === "on";
+  const canConvert =
+    wantsAutoCreate &&
+    !payload.client_id &&
+    payload.client_phone &&
+    normalizePhone(payload.client_phone).length >= 7;
+
+  let convertOutcome: "created" | "exists" | "failed" | null = null;
+  if (canConvert) {
+    const result = await convertBookingToClient(inserted.id);
+    if (result.ok) convertOutcome = "created";
+    else if (result.error?.includes("مسجل مسبقاً")) convertOutcome = "exists";
+    else convertOutcome = "failed";
+  }
+
   revalidatePath("/admin/bookings");
   revalidatePath("/admin");
   revalidatePath("/");
+
+  // Redirect to the new booking's edit page when we created (or tried
+  // to create) an account — admin sees the linked badge + the green
+  // "✓ مربوط بحساب" confirmation. Otherwise back to the list.
+  if (convertOutcome) {
+    redirect(`/admin/bookings/${inserted.id}?account=${convertOutcome}`);
+  }
   redirect("/admin/bookings");
 }
 
