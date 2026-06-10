@@ -432,6 +432,57 @@ export async function convertBookingToClient(
   };
 }
 
+/**
+ * Mark a cancelled booking as refunded — writes `refunded_at = now()`.
+ *
+ * The client portal flips its cancellation banner from
+ * "كلمينا عن الاسترداد" → "✓ تم الاسترداد بتاريخ X" the moment this
+ * fires. We intentionally don't validate that the booking is
+ * cancelled — admin owns that policy and might want to mark an
+ * active partial-refund booking too later on.
+ */
+export async function markBookingRefunded(
+  bookingId: string,
+): Promise<{ error?: string; refundedAt?: string }> {
+  const supabase = await createServerSupabaseClient();
+  const refundedAt = new Date().toISOString();
+
+  const { error } = await supabase
+    .from("bookings")
+    .update({ refunded_at: refundedAt })
+    .eq("id", bookingId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/bookings");
+  revalidatePath(`/admin/bookings/${bookingId}`);
+  revalidatePath("/account");
+  return { refundedAt };
+}
+
+/**
+ * Undo a refund mark — clears `refunded_at` back to NULL. Useful
+ * when SANDO mis-clicks or needs to walk back a refund decision
+ * before the client sees the new state.
+ */
+export async function unmarkBookingRefunded(
+  bookingId: string,
+): Promise<{ error?: string }> {
+  const supabase = await createServerSupabaseClient();
+
+  const { error } = await supabase
+    .from("bookings")
+    .update({ refunded_at: null })
+    .eq("id", bookingId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/bookings");
+  revalidatePath(`/admin/bookings/${bookingId}`);
+  revalidatePath("/account");
+  return {};
+}
+
 export async function deleteBooking(
   bookingId: string,
 ): Promise<{ error?: string }> {

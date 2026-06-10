@@ -145,6 +145,19 @@ export default async function MyTripDetailPage({
     : `مرحبا فريق سيا`;
   const waMessage = `${intro} — عندي سؤال عن رحلة ${trip.name}`;
   const waPaymentRemainderMessage = `${intro} — بدي أدفع باقي رحلة ${trip.name}`;
+  // Refund-specific message — only used when the booking is cancelled.
+  // We don't mention an amount; SANDO confirms the refund amount on
+  // WhatsApp so we don't accidentally promise a number that hasn't
+  // been processed yet (admin owns the refund decision).
+  const waRefundMessage = `${intro} — حابة استفسر عن استرداد رحلة ${trip.name}`;
+
+  // When the booking is cancelled, the gated content (companion
+  // itinerary, restaurants, flight numbers, packing list, etc.) is
+  // hidden from the page. The client still sees: trip name, the
+  // cancellation acknowledgement banner, payment summary, and a
+  // WhatsApp button for refund follow-up. This keeps the brand
+  // empathetic without leaking paid content to someone who cancelled.
+  const isCancelled = booking.status === "cancelled";
 
   return (
     <div className="space-y-8" dir="rtl">
@@ -157,17 +170,25 @@ export default async function MyTripDetailPage({
       </Link>
 
       {/* Hero — shorter aspect on mobile so the badge + title + countdown
-          stack stays compact instead of eating the whole viewport. */}
+          stack stays compact instead of eating the whole viewport.
+          When the booking is cancelled we desaturate the image so the
+          card visually reads as "past" rather than "active". */}
       <section className="relative overflow-hidden rounded-3xl text-white aspect-[5/4] sm:aspect-[16/10] md:aspect-[21/10]">
         <Image
           src={trip.image_url}
           alt={trip.name}
           fill
           priority
-          className="object-cover"
+          className={`object-cover ${isCancelled ? "grayscale opacity-65" : ""}`}
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/45 to-black/75" />
+        <div
+          className={`absolute inset-0 ${
+            isCancelled
+              ? "bg-gradient-to-b from-ink/55 via-ink/65 to-ink/85"
+              : "bg-gradient-to-b from-black/30 via-black/45 to-black/75"
+          }`}
+        />
         <div className="absolute inset-0 p-4 md:p-10 flex flex-col">
           <div className="flex items-center gap-2 flex-wrap">
             <span
@@ -193,85 +214,189 @@ export default async function MyTripDetailPage({
             </p>
           </div>
 
-          {departureMs !== null && daysUntil !== null && daysUntil >= 0 && (
-            <div className="mt-3 md:mt-5 mx-auto w-full max-w-md">
-              <LiveCountdown targetMs={departureMs} variant="dark" compact />
+          {isCancelled ? (
+            // Replace the countdown with a clear cancellation
+            // acknowledgement. The dashed border + restrained palette
+            // signals "neutral" — no alarms, no celebrations, just a
+            // factual state.
+            <div className="mt-3 md:mt-5 mx-auto inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/12 border border-white/25 text-white text-xs md:text-sm font-bold backdrop-blur">
+              تم إلغاء هذا الحجز
             </div>
+          ) : (
+            departureMs !== null &&
+            daysUntil !== null &&
+            daysUntil >= 0 && (
+              <div className="mt-3 md:mt-5 mx-auto w-full max-w-md">
+                <LiveCountdown targetMs={departureMs} variant="dark" compact />
+              </div>
+            )
           )}
         </div>
       </section>
 
-      {/* Payment progress */}
-      <section className="bg-white rounded-3xl border border-ink/5 p-6">
-        <div className="flex items-center justify-between gap-4 flex-wrap mb-3">
-          <h2 className="text-lg font-black text-ink">حالة الدفع</h2>
-          <div className="text-sm font-bold text-ink tabular-nums">
-            <bdi>
-              {formatBookingPrice(booking.paid_amount, booking.currency)}
-            </bdi>
-            <span className="text-ink/40 font-normal">
-              {" / "}
+      {/* Cancellation acknowledgement card — only when cancelled.
+          Three sub-states based on the booking's money + refunded_at:
+            1. paid=0  → "تم الإلغاء بدون رسوم"
+            2. paid>0 + refunded_at IS NULL → WhatsApp refund inquiry
+            3. paid>0 + refunded_at IS set  → "✓ تم الاسترداد بتاريخ X"
+          We don't show a CTA in case 3 — the loop is closed, no
+          follow-up needed. */}
+      {isCancelled && (() => {
+        const paidNum = Number(booking.paid_amount);
+        const refundedAt = booking.refunded_at;
+        const hasPaid = paidNum > 0;
+
+        return (
+          <section className="bg-white rounded-3xl border-2 border-ink/10 p-6 md:p-7">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-11 h-11 rounded-2xl bg-ink/8 text-ink/55 grid place-items-center shrink-0">
+                <AlertTriangle size={20} />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg md:text-xl font-black text-ink">
+                  تم إلغاء هذا الحجز
+                </h2>
+                <p className="text-sm text-ink/65 mt-1 leading-relaxed">
+                  {!hasPaid
+                    ? "تم الإلغاء بدون أي رسوم. اذا حابة تحجزي رحلة تانية، نحن هون 🤍"
+                    : refundedAt
+                      ? "إجراءات الاسترداد خلصت — شكراً لثقتك بـ SeeYa."
+                      : "لو في أي سؤال عن الاسترداد، فريقنا متابع معاكِ. لا تترددي بالتواصل."}
+                </p>
+              </div>
+            </div>
+
+            {hasPaid && (
+              <div className="rounded-2xl bg-ink/3 border border-ink/8 px-4 py-3 mb-4">
+                <p className="text-xs text-ink/55 mb-0.5">
+                  المبلغ المدفوع للرحلة
+                </p>
+                <p
+                  className="text-lg font-black text-ink tabular-nums"
+                  dir="ltr"
+                >
+                  {formatBookingPrice(booking.paid_amount, booking.currency)}
+                </p>
+                {refundedAt && (
+                  <p
+                    className="text-[11px] text-emerald-700 font-bold mt-2 inline-flex items-center gap-1.5"
+                    dir="rtl"
+                  >
+                    ✓ تم الاسترداد بتاريخ{" "}
+                    <bdi dir="ltr" className="tabular-nums">
+                      {formatRefundDate(refundedAt)}
+                    </bdi>
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Show WhatsApp refund inquiry ONLY in the pending state.
+                Once refunded, the loop is closed and nudging the client
+                to follow up would feel disrespectful. */}
+            {hasPaid && !refundedAt && (
+              <a
+                href={waLink(waRefundMessage)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold active:scale-[0.98] transition-all"
+              >
+                <MessageCircle size={16} />
+                كلمينا عن الاسترداد
+              </a>
+            )}
+          </section>
+        );
+      })()}
+
+      {/* Payment progress — hide for cancelled bookings (the cancellation
+          card above handles the money story). */}
+      {!isCancelled && (
+        <section className="bg-white rounded-3xl border border-ink/5 p-6">
+          <div className="flex items-center justify-between gap-4 flex-wrap mb-3">
+            <h2 className="text-lg font-black text-ink">حالة الدفع</h2>
+            <div className="text-sm font-bold text-ink tabular-nums">
               <bdi>
-                {formatBookingPrice(booking.total_amount, booking.currency)}
+                {formatBookingPrice(booking.paid_amount, booking.currency)}
               </bdi>
-            </span>
+              <span className="text-ink/40 font-normal">
+                {" / "}
+                <bdi>
+                  {formatBookingPrice(booking.total_amount, booking.currency)}
+                </bdi>
+              </span>
+            </div>
           </div>
-        </div>
-        <div className="h-2 rounded-full bg-ink/8 overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all ${pct >= 100 ? "bg-emerald-500" : "bg-coral"}`}
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-        {remaining > 0 && booking.status !== "cancelled" ? (
-          <div className="flex items-center justify-between mt-3 flex-wrap gap-3">
-            <p className="text-sm text-ink/70">
-              متبقي{" "}
-              <bdi>{formatBookingPrice(remaining, booking.currency)}</bdi>
-            </p>
+          <div className="h-2 rounded-full bg-ink/8 overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${pct >= 100 ? "bg-emerald-500" : "bg-coral"}`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          {remaining > 0 ? (
+            <div className="flex items-center justify-between mt-3 flex-wrap gap-3">
+              <p className="text-sm text-ink/70">
+                متبقي{" "}
+                <bdi>{formatBookingPrice(remaining, booking.currency)}</bdi>
+              </p>
+              <a
+                href={waLink(waPaymentRemainderMessage)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-coral text-sm font-bold hover:underline"
+              >
+                <MessageCircle size={14} />
+                كلمينا لإتمام الدفع
+              </a>
+            </div>
+          ) : (
+            pct >= 100 && (
+              <p className="text-sm text-emerald-600 font-bold mt-3">
+                ✓ مدفوع بالكامل — جاهزة للسفر!
+              </p>
+            )
+          )}
+        </section>
+      )}
+
+      {/* Quick actions — only for active bookings. We deliberately
+          hide the PDF + the generic WhatsApp button for cancelled
+          bookings because the PDF is paid content and the
+          cancellation card above already surfaces the refund-specific
+          WhatsApp action. */}
+      {!isCancelled && (
+        <section className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {pdfUrl && (
             <a
-              href={waLink(waPaymentRemainderMessage)}
+              href={pdfUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-coral text-sm font-bold hover:underline"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-coral text-white font-bold hover:brightness-110 active:scale-[0.98] transition-all"
             >
-              <MessageCircle size={14} />
-              كلمينا لإتمام الدفع
+              <Download size={16} />
+              تحميل برنامج الرحلة PDF
             </a>
-          </div>
-        ) : (
-          pct >= 100 && (
-            <p className="text-sm text-emerald-600 font-bold mt-3">
-              ✓ مدفوع بالكامل — جاهزة للسفر!
-            </p>
-          )
-        )}
-      </section>
-
-      {/* Quick actions */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {pdfUrl && (
+          )}
           <a
-            href={pdfUrl}
+            href={waLink(waMessage)}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-coral text-white font-bold hover:brightness-110 active:scale-[0.98] transition-all"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold active:scale-[0.98] transition-all"
           >
-            <Download size={16} />
-            تحميل برنامج الرحلة PDF
+            <MessageCircle size={16} />
+            كلمينا على واتساب
           </a>
-        )}
-        <a
-          href={waLink(waMessage)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold active:scale-[0.98] transition-all"
-        >
-          <MessageCircle size={16} />
-          كلمينا على واتساب
-        </a>
-      </section>
+        </section>
+      )}
 
+      {/* Companion content — every section below this comment is gated
+          paid content (flights, hotel, packing, warnings, daily
+          itinerary, tips, restaurants, recommendations). Hidden
+          entirely for cancelled bookings so the cancellation flow
+          stays clean and the brand doesn't give away the value the
+          client cancelled out of. */}
+      {!isCancelled && (
+        <>
       {/* Flights — merge the per-booking override on top of the trip
           default field-by-field, so a client who only had her *time*
           overridden still sees the trip's airport names, airline,
@@ -505,6 +630,8 @@ export default async function MyTripDetailPage({
           </div>
         </CollapsibleCompanionSection>
       )}
+        </>
+      )}
     </div>
   );
 }
@@ -512,6 +639,19 @@ export default async function MyTripDetailPage({
 // ────────────────────────────────────────────────
 // helpers
 // ────────────────────────────────────────────────
+
+/**
+ * Format a refund timestamp (full ISO with time, e.g.
+ * "2026-06-08T18:42:11.000Z") into SANDO's DD.MM.YYYY style. The
+ * client never needs to see the time, only the calendar day on
+ * which her refund was processed.
+ */
+function formatRefundDate(iso: string): string {
+  const d = new Date(iso);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return `${dd}.${mm}.${d.getFullYear()}`;
+}
 
 /**
  * Convert an ISO date string ("2026-06-25") to the locale-friendly

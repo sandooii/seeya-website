@@ -7,6 +7,7 @@ import { bookingClientName } from "@/lib/bookings";
 import BookingForm from "../BookingForm";
 import ConvertToClientButton from "../ConvertToClientButton";
 import AccountCreatedBanner from "../AccountCreatedBanner";
+import RefundStatusPanel from "../RefundStatusPanel";
 import { updateBooking } from "../actions";
 
 export const metadata = { title: "تعديل حجز — Admin" };
@@ -121,6 +122,18 @@ export default async function EditBookingPage({
           />
         </div>
       </header>
+
+      {/* Refund panel — appears only for cancelled bookings so SANDO
+          can flag the refund as paid out. The client portal flips
+          its cancellation banner ('كلمينا عن الاسترداد' →
+          '✓ تم الاسترداد بتاريخ X') based on what this panel writes. */}
+      {booking.status === "cancelled" && (
+        <RefundStatusPanel
+          bookingId={booking.id}
+          initialRefundedAt={booking.refunded_at}
+          paidAmount={Number(booking.paid_amount)}
+        />
+      )}
 
       <BookingForm
         booking={booking}

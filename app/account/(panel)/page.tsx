@@ -106,6 +106,16 @@ export default async function AccountHomePage({
 
   const otherBookings = bookings.filter((b) => b.id !== featured?.id);
 
+  // "No active trip" state: she has bookings but every one of them is
+  // cancelled (or past). We don't want to show the same "ما عندك
+  // حجوزات بعد" copy as a brand-new visitor — that's tone-deaf to her
+  // history. Show a gentler "we don't have a trip ahead for you right
+  // now, here's how to find one" message above the muted cancelled
+  // cards.
+  const hasFutureActive = !!featured;
+  const allBookingsCancelled =
+    bookings.length > 0 && bookings.every((b) => b.status === "cancelled");
+
   // Compute reminder banners
   const reminders = computeReminders(bookings);
 
@@ -152,12 +162,57 @@ export default async function AccountHomePage({
       {/* ─── Featured booking — image + countdown + CTA in one card ─── */}
       {featured && featured.trip && <FeaturedBookingCard booking={featured} />}
 
-      {/* ─── Other bookings (past, extra future) ─── */}
+      {/* ─── No active trip ahead, but she has past/cancelled history ─── */}
+      {!hasFutureActive && bookings.length > 0 && (
+        <div className="bg-white rounded-3xl border border-dashed border-ink/15 p-7 md:p-9 text-center">
+          <div className="w-12 h-12 rounded-2xl bg-coral/8 text-coral mx-auto mb-3 grid place-items-center">
+            <Plane size={24} />
+          </div>
+          <h3 className="font-black text-ink text-lg">
+            {allBookingsCancelled
+              ? "ما عندك رحلة نشطة حالياً"
+              : "ما في رحلة قادمة بحسابك"}
+          </h3>
+          <p className="text-sm text-ink/60 mt-2 max-w-md mx-auto leading-relaxed">
+            {allBookingsCancelled
+              ? "إذا حابة تحجزي رحلة جديدة، تصفّحي وجهاتنا أو كلمينا مباشرة."
+              : "تصفّحي رحلاتنا القادمة أو كلمينا للسؤال عن أي وجهة."}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-5">
+            <Link
+              href="/#trips"
+              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-coral text-white text-sm font-bold hover:brightness-110 transition-colors"
+            >
+              <ArrowLeft size={14} />
+              تصفحي الرحلات
+            </Link>
+            <a
+              href={waLink(
+                clientName
+                  ? `مرحبا فريق سيا، معكِ ${clientName} — حابة احجز رحلة 🌍`
+                  : `مرحبا فريق سيا — حابة احجز رحلة 🌍`,
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
+            >
+              <MessageCircle size={14} />
+              كلميني للحجز
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Other bookings (past, extra future, cancelled) ─── */}
       {otherBookings.length > 0 && (
         <section>
           <header className="mb-4">
             <h2 className="text-2xl font-black text-ink">
-              {featured ? "باقي رحلاتي" : "رحلاتي"}
+              {featured
+                ? "باقي رحلاتي"
+                : allBookingsCancelled
+                  ? "حجوزاتك السابقة"
+                  : "رحلاتي"}
             </h2>
           </header>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -453,6 +508,20 @@ function CompactBookingCard({ booking }: { booking: BookingWithTrip }) {
   const pdfUrl = trip ? getTripPdfUrl(trip.pdf_path, trip.updated_at) : null;
   const total = Number(booking.total_amount);
   const paid = Number(booking.paid_amount);
+  const isCancelled = booking.status === "cancelled";
+  // Once the admin marks the booking as refunded, we swap the
+  // "كلمينا عن الاسترداد" CTA for a quiet "تم الاسترداد" acknowledgement.
+  const refundedAt = booking.refunded_at;
+  const isRefunded = Boolean(refundedAt);
+
+  // For cancelled bookings we want the WhatsApp CTA to be about the
+  // refund rather than a generic "open guide" — and we want the card
+  // to read as muted rather than as a still-active trip.
+  const clientName = (booking.client_name ?? "").trim();
+  const intro = clientName
+    ? `مرحبا فريق سيا، معكِ ${clientName}`
+    : `مرحبا فريق سيا`;
+  const refundMessage = `${intro} — حابة استفسر عن استرداد رحلة ${trip?.name ?? ""}`;
 
   return (
     <article className="bg-white rounded-3xl border border-ink/5 overflow-hidden flex flex-col">
@@ -462,9 +531,12 @@ function CompactBookingCard({ booking }: { booking: BookingWithTrip }) {
             src={trip.image_url}
             alt={trip.name}
             fill
-            className="object-cover"
+            className={`object-cover ${isCancelled ? "grayscale opacity-70" : ""}`}
             sizes="(min-width: 768px) 50vw, 100vw"
           />
+          {isCancelled && (
+            <div className="absolute inset-0 bg-ink/35" aria-hidden />
+          )}
           <div className="absolute top-3 right-3">
             <span
               className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${bookingStatusColor[booking.status]}`}
@@ -477,7 +549,11 @@ function CompactBookingCard({ booking }: { booking: BookingWithTrip }) {
 
       <div className="p-5 flex flex-col flex-1 gap-3">
         <div>
-          <h3 className="text-xl font-black text-ink">
+          <h3
+            className={`text-xl font-black ${
+              isCancelled ? "text-ink/55" : "text-ink"
+            }`}
+          >
             {trip?.name ?? "رحلة محذوفة"}
           </h3>
           {trip && (
@@ -494,48 +570,106 @@ function CompactBookingCard({ booking }: { booking: BookingWithTrip }) {
           )}
         </div>
 
-        {/* Minimal payment hint — full detail lives on the guide page */}
-        {booking.status !== "cancelled" && total > 0 && (
-          <p className="text-xs text-ink/55">
-            {paid >= total ? (
-              <span className="text-emerald-600 font-bold">
-                ✓ مدفوع بالكامل
-              </span>
+        {/* Cancelled — short factual line. Three sub-states:
+              · paid=0 → factual ack
+              · paid>0 + not refunded → ask to follow up
+              · paid>0 + refunded     → confirmation w/ date
+            Active — payment hint as before. */}
+        {isCancelled ? (
+          <p className="text-xs text-ink/55 leading-relaxed">
+            {paid > 0 ? (
+              isRefunded ? (
+                <span className="text-emerald-700 font-bold">
+                  ✓ تم استرداد{" "}
+                  <bdi className="tabular-nums">
+                    {formatBookingPrice(paid, booking.currency)}
+                  </bdi>{" "}
+                  بتاريخ{" "}
+                  <bdi className="tabular-nums" dir="ltr">
+                    {formatRefundDmy(refundedAt!)}
+                  </bdi>
+                </span>
+              ) : (
+                <>
+                  دفعتي{" "}
+                  <bdi className="font-bold text-ink tabular-nums">
+                    {formatBookingPrice(paid, booking.currency)}
+                  </bdi>{" "}
+                  — للسؤال عن الاسترداد كلمينا بالواتساب.
+                </>
+              )
             ) : (
-              <>
-                دفعت{" "}
-                <bdi className="font-bold text-ink tabular-nums">
-                  {formatBookingPrice(paid, booking.currency)}
-                </bdi>{" "}
-                من{" "}
-                <bdi className="tabular-nums">
-                  {formatBookingPrice(total, booking.currency)}
-                </bdi>
-              </>
+              <>تم إلغاء هذا الحجز. إذا حابة تحجزي رحلة تانية، نحن هون.</>
             )}
           </p>
-        )}
-        {booking.status !== "cancelled" && total === 0 && (
-          <p className="text-xs text-emerald-600 font-bold">✓ رحلتك جاهزة</p>
+        ) : (
+          <>
+            {total > 0 && (
+              <p className="text-xs text-ink/55">
+                {paid >= total ? (
+                  <span className="text-emerald-600 font-bold">
+                    ✓ مدفوع بالكامل
+                  </span>
+                ) : (
+                  <>
+                    دفعت{" "}
+                    <bdi className="font-bold text-ink tabular-nums">
+                      {formatBookingPrice(paid, booking.currency)}
+                    </bdi>{" "}
+                    من{" "}
+                    <bdi className="tabular-nums">
+                      {formatBookingPrice(total, booking.currency)}
+                    </bdi>
+                  </>
+                )}
+              </p>
+            )}
+            {total === 0 && (
+              <p className="text-xs text-emerald-600 font-bold">
+                ✓ رحلتك جاهزة
+              </p>
+            )}
+          </>
         )}
 
         <div className="flex items-center gap-2 mt-auto pt-2 flex-wrap">
-          <Link
-            href={`/account/trips/${booking.id}`}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-coral text-white text-xs font-bold hover:brightness-110 transition-colors"
-          >
-            دليل الرحلة ←
-          </Link>
-          {pdfUrl && (
-            <a
-              href={pdfUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-coral/8 text-coral text-xs font-bold hover:bg-coral/15 transition-colors"
-            >
-              <Download size={13} />
-              PDF
-            </a>
+          {isCancelled ? (
+            // No "guide" link for cancelled (companion content is hidden
+            // anyway). When still pending refund we surface the WhatsApp
+            // inquiry; once refunded, the card is purely informational
+            // — no nudge button. The refund-paid line above is the
+            // closure the client needs.
+            !isRefunded && paid > 0 ? (
+              <a
+                href={waLink(refundMessage)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors"
+              >
+                <MessageCircle size={13} />
+                كلمينا عن الاسترداد
+              </a>
+            ) : null
+          ) : (
+            <>
+              <Link
+                href={`/account/trips/${booking.id}`}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-coral text-white text-xs font-bold hover:brightness-110 transition-colors"
+              >
+                دليل الرحلة ←
+              </Link>
+              {pdfUrl && (
+                <a
+                  href={pdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-coral/8 text-coral text-xs font-bold hover:bg-coral/15 transition-colors"
+                >
+                  <Download size={13} />
+                  PDF
+                </a>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -628,6 +762,18 @@ function computeReminders(bookings: BookingWithTrip[]): Reminder[] {
   }
 
   return out;
+}
+
+/**
+ * Format a refund timestamp ("2026-06-08T18:42:11.000Z") as
+ * DD.MM.YYYY — matches the rest of SeeYa's date conventions and
+ * hides the time portion the client doesn't care about.
+ */
+function formatRefundDmy(iso: string): string {
+  const d = new Date(iso);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return `${dd}.${mm}.${d.getFullYear()}`;
 }
 
 /**

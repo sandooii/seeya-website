@@ -176,6 +176,14 @@ export type BookingRow = {
    * info. See `BookingFlightOverride`.
    */
   flight_override: BookingFlightOverride | null;
+  /**
+   * When the admin marked this booking as refunded (migration 0012).
+   * NULL while the refund is still pending or doesn't apply. The
+   * client portal flips its cancellation banner from
+   * "كلمينا عن الاسترداد" → "✓ تم الاسترداد بتاريخ ..." once this
+   * is set.
+   */
+  refunded_at: string | null;
   created_at: string;
   updated_at: string;
 };
