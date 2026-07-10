@@ -558,6 +558,64 @@ function CompactBookingCard({ booking }: { booking: BookingWithTrip }) {
     : `مرحبا فريق سيا`;
   const refundMessage = `${intro} — حابة استفسر عن استرداد رحلة ${trip?.name ?? ""}`;
 
+  // ─── Archived variant ─────────────────────────────────────────
+  // Hero-style layout mirroring FeaturedBookingCard so the returned
+  // trip reads as a full card, not a footnote. The image dominates,
+  // the trip name + dates sit INSIDE the image with a warm gradient
+  // wash, and the body underneath is just the single 'احجزي رحلة
+  // تانية' coral CTA — no payment status, no memory blurb (SANDO's
+  // feedback: those are noise post-trip).
+  if (isArchived && trip) {
+    return (
+      <article className="bg-white rounded-3xl border border-ink/5 overflow-hidden shadow-sm">
+        <div className="relative aspect-[5/4] sm:aspect-[16/10] md:aspect-[21/10] text-white">
+          <Image
+            src={trip.image_url}
+            alt={trip.name}
+            fill
+            className="object-cover sepia-[0.25] saturate-[0.95]"
+            sizes="(min-width: 768px) 50vw, 100vw"
+          />
+          {/* Warm coral-tinted overlay — matches the trip detail
+              archived hero, so the archived state feels coherent
+              between the two surfaces. */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-coral/25 to-black/70" />
+          <div className="absolute inset-0 p-4 md:p-6 flex flex-col">
+            {/* Top: memory badge, aligned to the RTL start */}
+            <div className="flex justify-start">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-coral/25 border border-coral/40 backdrop-blur text-white">
+                🌸 من رحلاتك السابقة
+              </span>
+            </div>
+            {/* Spacer pushes the title+chip stack to the bottom */}
+            <div className="flex-1" />
+            {/* Title + dates */}
+            <div className="text-center">
+              <h3 className="text-xl md:text-3xl font-black drop-shadow-lg leading-tight">
+                {trip.name}
+              </h3>
+              <p className="text-white/90 text-[11px] md:text-sm mt-0.5 md:mt-1 tabular-nums">
+                <bdi>{trip.month}</bdi> · <bdi>{trip.duration}</bdi>
+              </p>
+            </div>
+            {/* Gratitude chip mirroring the detail-page hero */}
+            <div className="mt-3 md:mt-4 mx-auto inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-coral/20 border border-coral/40 text-white text-xs md:text-sm font-bold backdrop-blur">
+              🎉 شكراً لسفرك معنا
+            </div>
+          </div>
+        </div>
+        <div className="p-5 md:p-6 flex justify-center">
+          <Link
+            href="/#trips"
+            className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-coral text-white text-sm font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_10px_30px_-10px_rgba(249,92,107,0.55)]"
+          >
+            ✨ احجزي رحلة تانية
+          </Link>
+        </div>
+      </article>
+    );
+  }
+
   return (
     <article className="bg-white rounded-3xl border border-ink/5 overflow-hidden flex flex-col">
       {trip && (
