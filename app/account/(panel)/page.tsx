@@ -191,60 +191,44 @@ export default async function AccountHomePage({
       {/* ─── Featured booking — image + countdown + CTA in one card ─── */}
       {featured && featured.trip && <FeaturedBookingCard booking={featured} />}
 
-      {/* ─── No active trip ahead, but she has past/cancelled history ─── */}
+      {/* ─── No active trip ahead, but she has past/cancelled history ───
+          Slim, single-line invitations. Two variants:
+            · Returning traveler (hasAnyArchived) → warm coral tint +
+              one 'شوفي وجهاتنا الجديدة' button.
+            · Cancelled-only OR just no upcoming → neutral card + same
+              single button.
+          Removed the duplicated 'كلميني للحجز' secondary — she has the
+          floating WhatsApp button in the bottom corner anyway, and the
+          post-trip screen shouldn't feel like a form of transactions. */}
       {!hasFutureActive && bookings.length > 0 && (
         <div
-          className={`rounded-3xl border p-7 md:p-9 text-center ${
+          className={`rounded-3xl border p-6 md:p-7 text-center ${
             hasAnyArchived
               ? "bg-gradient-to-br from-coral/8 to-pale border-coral/25"
               : "bg-white border-dashed border-ink/15"
           }`}
         >
-          <div
-            className={`w-12 h-12 rounded-2xl mx-auto mb-3 grid place-items-center ${
-              hasAnyArchived
-                ? "bg-coral text-white"
-                : "bg-coral/8 text-coral"
-            }`}
-          >
-            {hasAnyArchived ? "🌸" : <Plane size={24} />}
-          </div>
           <h3 className="font-black text-ink text-lg">
             {hasAnyArchived
-              ? "شكراً لسفرك معنا — جاهزة للرحلة الجاية؟"
+              ? "جاهزة للرحلة الجاية؟ 🌸"
               : allBookingsCancelled
                 ? "ما عندك رحلة نشطة حالياً"
                 : "ما في رحلة قادمة بحسابك"}
           </h3>
           <p className="text-sm text-ink/65 mt-2 max-w-md mx-auto leading-relaxed">
             {hasAnyArchived
-              ? "شفتي وجهاتنا الجديدة؟ في رحلات محضّرة مخصوص لبنات زيّك بحبن يكتشفن ✨"
+              ? "شوفي وجهاتنا الجديدة ✨"
               : allBookingsCancelled
-                ? "إذا حابة تحجزي رحلة جديدة، تصفّحي وجهاتنا أو كلمينا مباشرة."
-                : "تصفّحي رحلاتنا القادمة أو كلمينا للسؤال عن أي وجهة."}
+                ? "إذا حابة تحجزي رحلة جديدة، تصفّحي وجهاتنا."
+                : "تصفّحي رحلاتنا القادمة."}
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-5">
-            <Link
-              href="/#trips"
-              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-coral text-white text-sm font-bold hover:brightness-110 transition-colors"
-            >
-              <ArrowLeft size={14} />
-              {hasAnyArchived ? "✨ شوفي وجهاتنا الجديدة" : "تصفحي الرحلات"}
-            </Link>
-            <a
-              href={waLink(
-                clientName
-                  ? `مرحبا فريق سيا، معكِ ${clientName} — حابة احجز رحلة 🌍`
-                  : `مرحبا فريق سيا — حابة احجز رحلة 🌍`,
-              )}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors"
-            >
-              <MessageCircle size={14} />
-              كلميني للحجز
-            </a>
-          </div>
+          <Link
+            href="/#trips"
+            className="inline-flex items-center justify-center gap-1.5 px-6 py-2.5 rounded-full bg-coral text-white text-sm font-bold hover:brightness-110 transition-colors mt-5"
+          >
+            <ArrowLeft size={14} />
+            {hasAnyArchived ? "شوفي الرحلات الجديدة" : "تصفحي الرحلات"}
+          </Link>
         </div>
       )}
 
