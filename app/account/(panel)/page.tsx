@@ -191,6 +191,31 @@ export default async function AccountHomePage({
       {/* ─── Featured booking — image + countdown + CTA in one card ─── */}
       {featured && featured.trip && <FeaturedBookingCard booking={featured} />}
 
+      {/* ─── Other bookings (past, extra future, cancelled) ───
+          Rendered BEFORE the 'no active trip' invitation card because
+          her own content should lead. When someone opens /account and
+          she has any trip on file, we want the trip to be the first
+          thing she sees under her greeting; the 'shop the next trip'
+          card comes after as a soft follow-up, not a header banner. */}
+      {otherBookings.length > 0 && (
+        <section>
+          <header className="mb-4">
+            <h2 className="text-2xl font-black text-ink">
+              {featured
+                ? "باقي رحلاتي"
+                : allBookingsCancelled
+                  ? "حجوزاتك السابقة"
+                  : "رحلاتي"}
+            </h2>
+          </header>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {otherBookings.map((b) => (
+              <CompactBookingCard key={b.id} booking={b} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* ─── No active trip ahead, but she has past/cancelled history ───
           Slim, single-line invitations. Two variants:
             · Returning traveler (hasAnyArchived) → warm coral tint +
@@ -230,26 +255,6 @@ export default async function AccountHomePage({
             {hasAnyArchived ? "شوفي الرحلات الجديدة" : "تصفحي الرحلات"}
           </Link>
         </div>
-      )}
-
-      {/* ─── Other bookings (past, extra future, cancelled) ─── */}
-      {otherBookings.length > 0 && (
-        <section>
-          <header className="mb-4">
-            <h2 className="text-2xl font-black text-ink">
-              {featured
-                ? "باقي رحلاتي"
-                : allBookingsCancelled
-                  ? "حجوزاتك السابقة"
-                  : "رحلاتي"}
-            </h2>
-          </header>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {otherBookings.map((b) => (
-              <CompactBookingCard key={b.id} booking={b} />
-            ))}
-          </div>
-        </section>
       )}
 
       {/* ─── Empty state — no bookings at all ─── */}
