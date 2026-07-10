@@ -11,7 +11,13 @@ export default async function Home() {
   // Read trips from the database — RLS allows public read.
   // Server-rendered, revalidated when admin mutates trips
   // (see app/admin/(dash)/trips/actions.ts).
-  const trips = await getTripsForPublic();
+  //
+  // Zanzibar is filtered out here (not deleted from the DB) so that
+  // clients who booked the Zanzibar trip still see their record in
+  // /account, but the public homepage doesn't advertise a trip we've
+  // stopped selling.
+  const allTrips = await getTripsForPublic();
+  const trips = allTrips.filter((t) => t.id !== "zanzibar");
   const thailand = findTripBySlug(trips, "thailand");
 
   return (

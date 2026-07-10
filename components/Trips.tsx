@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Clock, MapPin, Users } from "lucide-react";
-import { formatPrice, type Trip } from "./data";
+import { Calendar, Clock, MapPin } from "lucide-react";
+import { type Trip } from "./data";
 import TripModal from "./TripModal";
 import WaitlistFormModal from "./WaitlistFormModal";
 import { CONTACT } from "@/lib/contact";
@@ -85,7 +85,13 @@ function TripCard({ trip, onOpen }: { trip: Trip; onOpen: () => void }) {
     trip.status === "live" ||
     trip.status === "open" ||
     trip.status === "sold-out";
-  const priceLabel = formatPrice(trip);
+
+  // NOTE: Price and remaining-spots are intentionally NOT rendered on
+  // the outside card — SANDO's design brief keeps the marketing
+  // surface uncluttered (photo + name + dates + duration). The full
+  // price + deposit + includes list lives inside TripModal, which
+  // opens on click. Both fields are still available on `trip` for
+  // the modal to consume.
 
   const cardClasses = `group relative overflow-hidden rounded-3xl bg-ink text-white text-right min-h-[300px] flex flex-col ${
     clickable
@@ -116,15 +122,6 @@ function TripCard({ trip, onOpen }: { trip: Trip; onOpen: () => void }) {
           {trip.badge}
         </span>
       </div>
-
-      {priceLabel && (
-        <div
-          className="absolute top-5 left-5 bg-white/95 backdrop-blur text-ink px-3 py-1.5 rounded-full text-xs font-bold tracking-widest z-20"
-          dir="ltr"
-        >
-          {priceLabel}
-        </div>
-      )}
 
       <div className="absolute bottom-0 right-0 left-0 p-6 md:p-7 z-10">
         <h3 className="text-3xl md:text-4xl font-black drop-shadow-lg">
@@ -227,12 +224,6 @@ function TripCard({ trip, onOpen }: { trip: Trip; onOpen: () => void }) {
         <Clock size={16} className="text-coral" />
         {trip.duration}
       </span>
-      {trip.spots > 0 && (
-        <span className="inline-flex items-center gap-1.5">
-          <Users size={16} className="text-coral" />
-          {trip.spots} مقاعد
-        </span>
-      )}
     </div>
   );
 
