@@ -43,6 +43,7 @@ type BookingWithTrip = BookingRow & {
     | "month"
     | "duration"
     | "start_date"
+    | "end_date"
     | "pdf_path"
     | "updated_at"
     | "companion_content"
@@ -50,6 +51,27 @@ type BookingWithTrip = BookingRow & {
 };
 
 type SearchParams = Promise<{ linked?: string }>;
+
+/**
+ * A booking is "archived" when the trip has already returned —
+ * `trip.end_date` is in the past. Cancelled bookings are NOT
+ * archived (they have their own state). We keep the archived
+ * card warm and welcoming: past trips are memories, not a
+ * problem to solve.
+ *
+ * Compare against midnight-today so a trip that ended today
+ * still reads as "just returned" for the rest of the day, and
+ * a trip ending tomorrow is still "upcoming".
+ */
+function isBookingArchived(
+  booking: BookingWithTrip,
+  todayMs: number,
+): boolean {
+  if (booking.status === "cancelled") return false;
+  const endDate = booking.trip?.end_date;
+  if (!endDate) return false;
+  return new Date(endDate).getTime() < todayMs;
+}
 
 export default async function AccountHomePage({
   searchParams,
@@ -78,7 +100,7 @@ export default async function AccountHomePage({
     .select(
       `
         *,
-        trip:trips(id, slug, name, country, image_url, month, duration, start_date, pdf_path, updated_at, companion_content)
+        trip:trips(id, slug, name, country, image_url, month, duration, start_date, end_date, pdf_path, updated_at, companion_content)
       `,
     )
     .eq("client_id", user.id)
@@ -115,6 +137,13 @@ export default async function AccountHomePage({
   const hasFutureActive = !!featured;
   const allBookingsCancelled =
     bookings.length > 0 && bookings.every((b) => b.status === "cancelled");
+  // Has at least one returned-from trip? When she has a mix of
+  // archive + no upcoming, we lead with a warm "welcome back —
+  // ready for the next?" tone instead of the neutral "no active".
+  const todayMidnightMs = today.getTime();
+  const hasAnyArchived = bookings.some((b) =>
+    isBookingArchived(b, todayMidnightMs),
+  );
 
   // Compute reminder banners
   const reminders = computeReminders(bookings);
@@ -164,19 +193,35 @@ export default async function AccountHomePage({
 
       {/* ─── No active trip ahead, but she has past/cancelled history ─── */}
       {!hasFutureActive && bookings.length > 0 && (
-        <div className="bg-white rounded-3xl border border-dashed border-ink/15 p-7 md:p-9 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-coral/8 text-coral mx-auto mb-3 grid place-items-center">
-            <Plane size={24} />
+        <div
+          className={`rounded-3xl border p-7 md:p-9 text-center ${
+            hasAnyArchived
+              ? "bg-gradient-to-br from-coral/8 to-pale border-coral/25"
+              : "bg-white border-dashed border-ink/15"
+          }`}
+        >
+          <div
+            className={`w-12 h-12 rounded-2xl mx-auto mb-3 grid place-items-center ${
+              hasAnyArchived
+                ? "bg-coral text-white"
+                : "bg-coral/8 text-coral"
+            }`}
+          >
+            {hasAnyArchived ? "🌸" : <Plane size={24} />}
           </div>
           <h3 className="font-black text-ink text-lg">
-            {allBookingsCancelled
-              ? "ما عندك رحلة نشطة حالياً"
-              : "ما في رحلة قادمة بحسابك"}
+            {hasAnyArchived
+              ? "شكراً لسفرك معنا — جاهزة للرحلة الجاية؟"
+              : allBookingsCancelled
+                ? "ما عندك رحلة نشطة حالياً"
+                : "ما في رحلة قادمة بحسابك"}
           </h3>
-          <p className="text-sm text-ink/60 mt-2 max-w-md mx-auto leading-relaxed">
-            {allBookingsCancelled
-              ? "إذا حابة تحجزي رحلة جديدة، تصفّحي وجهاتنا أو كلمينا مباشرة."
-              : "تصفّحي رحلاتنا القادمة أو كلمينا للسؤال عن أي وجهة."}
+          <p className="text-sm text-ink/65 mt-2 max-w-md mx-auto leading-relaxed">
+            {hasAnyArchived
+              ? "شفتي وجهاتنا الجديدة؟ في رحلات محضّرة مخصوص لبنات زيّك بحبن يكتشفن ✨"
+              : allBookingsCancelled
+                ? "إذا حابة تحجزي رحلة جديدة، تصفّحي وجهاتنا أو كلمينا مباشرة."
+                : "تصفّحي رحلاتنا القادمة أو كلمينا للسؤال عن أي وجهة."}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center mt-5">
             <Link
@@ -184,7 +229,7 @@ export default async function AccountHomePage({
               className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-coral text-white text-sm font-bold hover:brightness-110 transition-colors"
             >
               <ArrowLeft size={14} />
-              تصفحي الرحلات
+              {hasAnyArchived ? "✨ شوفي وجهاتنا الجديدة" : "تصفحي الرحلات"}
             </Link>
             <a
               href={waLink(
@@ -513,6 +558,12 @@ function CompactBookingCard({ booking }: { booking: BookingWithTrip }) {
   // "كلمينا عن الاسترداد" CTA for a quiet "تم الاسترداد" acknowledgement.
   const refundedAt = booking.refunded_at;
   const isRefunded = Boolean(refundedAt);
+  // A trip that returned already — end_date < today AND not cancelled.
+  // We treat it as a "memory" instead of an active trip so the card
+  // reads as warm archive, not an urgent to-do.
+  const todayMidnight = new Date();
+  todayMidnight.setHours(0, 0, 0, 0);
+  const isArchived = isBookingArchived(booking, todayMidnight.getTime());
 
   // For cancelled bookings we want the WhatsApp CTA to be about the
   // refund rather than a generic "open guide" — and we want the card
@@ -531,18 +582,42 @@ function CompactBookingCard({ booking }: { booking: BookingWithTrip }) {
             src={trip.image_url}
             alt={trip.name}
             fill
-            className={`object-cover ${isCancelled ? "grayscale opacity-70" : ""}`}
+            className={`object-cover ${
+              isCancelled
+                ? "grayscale opacity-70"
+                : isArchived
+                  ? "sepia-[0.35] saturate-[0.9]"
+                  : ""
+            }`}
             sizes="(min-width: 768px) 50vw, 100vw"
           />
           {isCancelled && (
             <div className="absolute inset-0 bg-ink/35" aria-hidden />
           )}
+          {/* Archived — subtle warm gradient wash so the card reads as
+              "memory" rather than "still active". */}
+          {isArchived && (
+            <div
+              aria-hidden
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(255,240,235,0.05) 0%, rgba(249,92,107,0.08) 100%)",
+              }}
+            />
+          )}
           <div className="absolute top-3 right-3">
-            <span
-              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${bookingStatusColor[booking.status]}`}
-            >
-              {bookingStatusLabel[booking.status]}
-            </span>
+            {isArchived ? (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border bg-coral/15 text-coral-dark border-coral/25 backdrop-blur-sm">
+                🌸 من رحلاتك السابقة
+              </span>
+            ) : (
+              <span
+                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${bookingStatusColor[booking.status]}`}
+              >
+                {bookingStatusLabel[booking.status]}
+              </span>
+            )}
           </div>
         </div>
       )}
@@ -567,6 +642,11 @@ function CompactBookingCard({ booking }: { booking: BookingWithTrip }) {
                 {trip.duration}
               </span>
             </div>
+          )}
+          {isArchived && (
+            <p className="text-xs text-coral-dark mt-2 leading-relaxed">
+              نتمنى إنك قضيتي وقت رائع 🌸
+            </p>
           )}
         </div>
 
@@ -650,6 +730,25 @@ function CompactBookingCard({ booking }: { booking: BookingWithTrip }) {
                 كلمينا عن الاسترداد
               </a>
             ) : null
+          ) : isArchived ? (
+            // Archived — the trip has returned. Keep the guide link
+            // (companion content stays visible as memories on the
+            // detail page, sans the pre-trip prep) and add a coral
+            // "book another" CTA that anchors to the trips list.
+            <>
+              <Link
+                href={`/account/trips/${booking.id}`}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-ink/6 text-ink/75 text-xs font-bold hover:bg-ink/10 transition-colors"
+              >
+                ذكريات الرحلة ←
+              </Link>
+              <Link
+                href="/#trips"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-coral text-white text-xs font-bold hover:brightness-110 transition-colors"
+              >
+                ✨ احجزي رحلة تانية
+              </Link>
+            </>
           ) : (
             <>
               <Link

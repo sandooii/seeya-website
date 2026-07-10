@@ -159,6 +159,19 @@ export default async function MyTripDetailPage({
   // empathetic without leaking paid content to someone who cancelled.
   const isCancelled = booking.status === "cancelled";
 
+  // The trip has already returned: end_date is in the past AND it
+  // wasn't cancelled. We treat this as an "archive" state — the
+  // memories (itinerary, restaurants, recommendations, tips,
+  // flights, hotel, PDF) stay visible for nostalgia. The pre-trip
+  // sections (packing list, warnings) hide because they're
+  // useless after the trip. Countdown flips to a warm thank-you
+  // card and the primary CTA becomes "احجزي رحلة تانية".
+  const archiveMidnight = today.getTime();
+  const isArchived =
+    !isCancelled &&
+    !!trip.end_date &&
+    new Date(trip.end_date).getTime() < archiveMidnight;
+
   return (
     <div className="space-y-8" dir="rtl">
       <Link
@@ -171,31 +184,49 @@ export default async function MyTripDetailPage({
 
       {/* Hero — shorter aspect on mobile so the badge + title + countdown
           stack stays compact instead of eating the whole viewport.
-          When the booking is cancelled we desaturate the image so the
-          card visually reads as "past" rather than "active". */}
+          When the booking is cancelled we desaturate the image; when
+          the trip has returned we tint it with a warm coral wash so it
+          reads as a memory rather than an active plan. */}
       <section className="relative overflow-hidden rounded-3xl text-white aspect-[5/4] sm:aspect-[16/10] md:aspect-[21/10]">
         <Image
           src={trip.image_url}
           alt={trip.name}
           fill
           priority
-          className={`object-cover ${isCancelled ? "grayscale opacity-65" : ""}`}
+          className={`object-cover ${
+            isCancelled
+              ? "grayscale opacity-65"
+              : isArchived
+                ? "sepia-[0.25] saturate-[0.95]"
+                : ""
+          }`}
           sizes="100vw"
         />
         <div
           className={`absolute inset-0 ${
             isCancelled
               ? "bg-gradient-to-b from-ink/55 via-ink/65 to-ink/85"
-              : "bg-gradient-to-b from-black/30 via-black/45 to-black/75"
+              : isArchived
+                ? "bg-gradient-to-b from-black/25 via-coral/25 to-black/70"
+                : "bg-gradient-to-b from-black/30 via-black/45 to-black/75"
           }`}
         />
         <div className="absolute inset-0 p-4 md:p-10 flex flex-col">
           <div className="flex items-center gap-2 flex-wrap">
-            <span
-              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${bookingStatusColor[displayStatus]}`}
-            >
-              {bookingStatusLabel[displayStatus]}
-            </span>
+            {isArchived ? (
+              // Warm memory-badge replaces the payment-status chip
+              // once a trip has returned. Coral-on-cream feels
+              // celebratory, not clinical.
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-coral/20 border border-coral/40 text-white backdrop-blur">
+                🌸 من رحلاتك السابقة
+              </span>
+            ) : (
+              <span
+                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${bookingStatusColor[displayStatus]}`}
+              >
+                {bookingStatusLabel[displayStatus]}
+              </span>
+            )}
             {booking.client_name && (
               <span className="text-white/90 text-xs font-semibold">
                 {booking.client_name}
@@ -221,6 +252,13 @@ export default async function MyTripDetailPage({
             // factual state.
             <div className="mt-3 md:mt-5 mx-auto inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/12 border border-white/25 text-white text-xs md:text-sm font-bold backdrop-blur">
               تم إلغاء هذا الحجز
+            </div>
+          ) : isArchived ? (
+            // Warm thank-you chip in place of the (now nonsensical)
+            // countdown. Same size + placement as the countdown so the
+            // hero composition stays consistent between states.
+            <div className="mt-3 md:mt-5 mx-auto inline-flex items-center gap-2 px-4 py-2 rounded-full bg-coral/20 border border-coral/40 text-white text-xs md:text-sm font-bold backdrop-blur">
+              🎉 شكراً لسفرك معنا
             </div>
           ) : (
             departureMs !== null &&
@@ -359,12 +397,47 @@ export default async function MyTripDetailPage({
         </section>
       )}
 
-      {/* Quick actions — only for active bookings. We deliberately
-          hide the PDF + the generic WhatsApp button for cancelled
-          bookings because the PDF is paid content and the
-          cancellation card above already surfaces the refund-specific
-          WhatsApp action. */}
-      {!isCancelled && (
+      {/* Archived thank-you card — celebrates the returned trip and
+          gives her a friendly path to book another. Renders once the
+          trip has ended and takes the place of the countdown-related
+          urgency messaging. */}
+      {isArchived && (
+        <section className="rounded-3xl border-2 border-coral/25 bg-gradient-to-br from-coral/8 to-pale p-6 md:p-8">
+          <p className="text-2xl md:text-3xl font-black text-ink text-center">
+            رحلتك خلصت — بس الذكريات باقية 🌸
+          </p>
+          <p className="text-ink/70 text-sm md:text-base text-center mt-2 max-w-lg mx-auto leading-relaxed">
+            شكراً إنك اخترتي SeeYa. ذكريات{" "}
+            <strong className="text-ink">{trip.name}</strong> تحت لو حابة
+            تتذكري تفاصيلها. جاهزة لرحلتك الجاية؟
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
+            <Link
+              href="/#trips"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-coral text-white font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_10px_30px_-10px_rgba(249,92,107,0.55)]"
+            >
+              ✨ احجزي رحلة تانية
+            </Link>
+            <a
+              href={waLink(waMessage)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white text-ink font-bold border border-ink/10 hover:bg-ink/5 active:scale-[0.98] transition-all"
+            >
+              <MessageCircle size={16} />
+              كلميني للاستفسار
+            </a>
+          </div>
+        </section>
+      )}
+
+      {/* Quick actions — only for active (upcoming) bookings. We
+          deliberately hide the PDF + the generic WhatsApp button
+          for cancelled bookings (the cancellation card handles it)
+          and for archived bookings (the thank-you card handles it).
+          The PDF button lives inline with the memories sections
+          below for archived trips. */}
+      {!isCancelled && !isArchived && (
         <section className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {pdfUrl && (
             <a
@@ -387,6 +460,20 @@ export default async function MyTripDetailPage({
             كلمينا على واتساب
           </a>
         </section>
+      )}
+
+      {/* Archived-only compact PDF row — keeps the souvenir accessible
+          without the "call us" urgency of the active-trip toolbar. */}
+      {isArchived && pdfUrl && (
+        <a
+          href={pdfUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-ink/5 text-ink/75 text-sm font-bold hover:bg-ink/10 transition-all self-start"
+        >
+          <Download size={14} />
+          حمّلي PDF الرحلة كذكرى
+        </a>
       )}
 
       {/* Companion content — every section below this comment is gated
@@ -470,8 +557,10 @@ export default async function MyTripDetailPage({
           read the warnings, then the daily plan, then nice-to-have
           tips / restaurants / recommendations. */}
 
-      {/* 1. Packing list */}
-      {companion.packing && companion.packing.length > 0 && (
+      {/* 1. Packing list — pre-trip only. Hidden after the trip
+          returns because a packing checklist for a completed trip
+          is confusing (she doesn't need to pack anymore). */}
+      {!isArchived && companion.packing && companion.packing.length > 0 && (
         <CollapsibleCompanionSection
           title="قائمة التحضير 🧳"
           icon={<Luggage size={18} />}
@@ -493,9 +582,11 @@ export default async function MyTripDetailPage({
         </CollapsibleCompanionSection>
       )}
 
-      {/* 2. Warnings — bolder, larger, more emphatic so they read as
-          safety-critical instead of a list of bullet points. */}
-      {companion.warnings && companion.warnings.length > 0 && (
+      {/* 2. Warnings — pre-trip only. Same logic as packing: the
+          warnings are safety guidance for someone about to travel,
+          irrelevant (and slightly alarming) after she's already
+          returned safely. */}
+      {!isArchived && companion.warnings && companion.warnings.length > 0 && (
         <CollapsibleCompanionSection
           title="تحذيرات مهمة"
           icon={<AlertTriangle size={18} />}

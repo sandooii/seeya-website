@@ -88,7 +88,7 @@ export default function RefundStatusPanel({
               </p>
               <p className="text-emerald-700/85 text-xs mt-0.5">
                 بتاريخ <bdi dir="ltr">{formatDmy(refundedAt)}</bdi> · العميلة
-                بتشوف "تم الاسترداد" بحسابها
+                بتشوف &quot;تم الاسترداد&quot; بحسابها
               </p>
             </div>
           </div>
