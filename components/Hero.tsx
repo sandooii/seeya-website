@@ -256,7 +256,7 @@ function WomenHero() {
           transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
           className="text-3xl md:text-5xl lg:text-7xl font-black leading-tight tracking-tight text-white drop-shadow-[0_4px_30px_rgba(0,0,0,0.45)]"
         >
-          رحلات صُممت لمن تعرف قيمة نفسها
+          فخامة تليق بمن تعرف قيمة نفسها
         </motion.h2>
 
         <motion.p
