@@ -614,14 +614,10 @@ function CompactBookingCard({ booking }: { booking: BookingWithTrip }) {
             </div>
           </div>
         </div>
-        <div className="p-5 md:p-6 flex justify-center">
-          <Link
-            href="/#trips"
-            className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-coral text-white text-sm font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_10px_30px_-10px_rgba(249,92,107,0.55)]"
-          >
-            ✨ احجزي رحلة تانية
-          </Link>
-        </div>
+        {/* No body / CTA below the archive hero. The 'شوفي الرحلات
+            الجديدة' card immediately underneath already carries the
+            book-again invitation, so a second coral button here was
+            noise — SANDO asked for it gone. */}
       </article>
     );
   }
