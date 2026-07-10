@@ -306,7 +306,7 @@ export default function Countdown({ trip }: { trip: Trip | null }) {
             data-gsap="title"
             className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight"
           >
-            رحلة تايلاند 2026
+            {trip?.name ? `رحلة ${trip.name}` : "الرحلة القادمة"}
           </h2>
           <PalmTree />
         </div>

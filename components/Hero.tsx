@@ -19,10 +19,10 @@ type Flight = {
 const flights: Flight[] = [
   {
     destination: "THAILAND",
-    flight: "SY-001",
-    date: "06.2026",
-    status: "SOLD OUT",
-    statusColor: "#F95C6B",
+    flight: "SY-005",
+    date: "08.2026",
+    status: "SEATS OPEN",
+    statusColor: "#f5ecd9",
   },
   {
     destination: "BANSKO",
@@ -30,13 +30,6 @@ const flights: Flight[] = [
     date: "01.2026",
     status: "DEPARTED",
     statusColor: "#9aa1a8",
-  },
-  {
-    destination: "ZANZIBAR",
-    flight: "SY-003",
-    date: "08.2026",
-    status: "SOON",
-    statusColor: "#f5ecd9",
   },
   {
     destination: "AMERICA",
