@@ -420,22 +420,18 @@ export default async function MyTripDetailPage({
               زي ما تخيلتيها — وأكتر. الذكريات إلك، والوجهة الجاية
               بتنطرك.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center mt-7">
+            {/* Single primary CTA. The old secondary 'كلميني
+                للاستفسار' button was removed — post-trip, the
+                client has nothing concrete to inquire ABOUT, so the
+                button created ambiguity instead of a clear next step.
+                One button, one direction: book the next trip. */}
+            <div className="flex justify-center mt-7">
               <Link
                 href="/#trips"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-coral text-white font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_10px_30px_-10px_rgba(249,92,107,0.55)]"
               >
                 ✨ احجزي رحلة تانية
               </Link>
-              <a
-                href={waLink(waMessage)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-white text-ink font-bold border border-ink/10 hover:bg-ink/5 active:scale-[0.98] transition-all"
-              >
-                <MessageCircle size={16} />
-                كلميني للاستفسار
-              </a>
             </div>
           </div>
         </section>
