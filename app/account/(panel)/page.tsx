@@ -572,7 +572,12 @@ function CompactBookingCard({ booking }: { booking: BookingWithTrip }) {
   // feedback: those are noise post-trip).
   if (isArchived && trip) {
     return (
-      <article className="bg-white rounded-3xl border border-ink/5 overflow-hidden shadow-sm">
+      // md:col-span-2 pulls the archived card out of the 2-column grid
+      // so its hero image stretches to full page width, matching the
+      // 'جاهزة للرحلة الجاية' card underneath. Compact cards look silly
+      // as half-width heroes; giving the archive its own full row lets
+      // the image breathe and read as a memory poster.
+      <article className="bg-white rounded-3xl border border-ink/5 overflow-hidden shadow-sm md:col-span-2">
         <div className="relative aspect-[5/4] sm:aspect-[16/10] md:aspect-[21/10] text-white">
           <Image
             src={trip.image_url}
