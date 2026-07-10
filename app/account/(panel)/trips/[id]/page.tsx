@@ -399,42 +399,21 @@ export default async function MyTripDetailPage({
         </section>
       )}
 
-      {/* Archived thank-you card — the entire archived-trip page. The
-          detail sections (payment, flights, itinerary, restaurants,
-          recommendations, PDF) are all hidden for returned trips
-          because none of them are "memories" — they're stale
-          planning docs. This card is the whole conversation:
-          gratitude, a compliment, and an invitation. */}
+      {/* Archived CTA — the hero already delivers the gratitude
+          message ('🎉 شكراً لسفرك معنا' chip inside the image), so
+          duplicating it in a big card below reads as repetition
+          rather than reinforcement. Just the single coral 'book the
+          next trip' button underneath the hero — that's the whole
+          job of this state. */}
       {isArchived && (
-        <section className="rounded-3xl border-2 border-coral/25 bg-gradient-to-br from-coral/8 to-pale p-6 md:p-10">
-          <div className="max-w-lg mx-auto text-center">
-            <p className="text-5xl md:text-6xl mb-3" aria-hidden>
-              🌸
-            </p>
-            <p className="text-2xl md:text-3xl font-black text-ink leading-snug">
-              شكراً لسفرك معنا
-            </p>
-            <p className="text-ink/70 text-sm md:text-base mt-3 leading-relaxed">
-              نتمنى إن رحلة{" "}
-              <strong className="text-ink">{trip.name}</strong> كانت
-              زي ما تخيلتيها — وأكتر. الذكريات إلك، والوجهة الجاية
-              بتنطرك.
-            </p>
-            {/* Single primary CTA. The old secondary 'كلميني
-                للاستفسار' button was removed — post-trip, the
-                client has nothing concrete to inquire ABOUT, so the
-                button created ambiguity instead of a clear next step.
-                One button, one direction: book the next trip. */}
-            <div className="flex justify-center mt-7">
-              <Link
-                href="/#trips"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-coral text-white font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_10px_30px_-10px_rgba(249,92,107,0.55)]"
-              >
-                ✨ احجزي رحلة تانية
-              </Link>
-            </div>
-          </div>
-        </section>
+        <div className="flex justify-center">
+          <Link
+            href="/#trips"
+            className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-2xl bg-coral text-white font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_10px_30px_-10px_rgba(249,92,107,0.55)]"
+          >
+            ✨ احجزي رحلة تانية
+          </Link>
+        </div>
       )}
 
       {/* Quick actions — only for active (upcoming) bookings. We
