@@ -731,24 +731,17 @@ function CompactBookingCard({ booking }: { booking: BookingWithTrip }) {
               </a>
             ) : null
           ) : isArchived ? (
-            // Archived — the trip has returned. Keep the guide link
-            // (companion content stays visible as memories on the
-            // detail page, sans the pre-trip prep) and add a coral
-            // "book another" CTA that anchors to the trips list.
-            <>
-              <Link
-                href={`/account/trips/${booking.id}`}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-ink/6 text-ink/75 text-xs font-bold hover:bg-ink/10 transition-colors"
-              >
-                ذكريات الرحلة ←
-              </Link>
-              <Link
-                href="/#trips"
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-coral text-white text-xs font-bold hover:brightness-110 transition-colors"
-              >
-                ✨ احجزي رحلة تانية
-              </Link>
-            </>
+            // Archived — the trip has returned. No 'guide' link
+            // because the detail page for a returned trip is just a
+            // thank-you card (the pre-trip content isn't meaningful
+            // post-trip). Single coral CTA points the client at the
+            // next booking — the whole point of this state.
+            <Link
+              href="/#trips"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-coral text-white text-xs font-bold hover:brightness-110 transition-colors"
+            >
+              ✨ احجزي رحلة تانية
+            </Link>
           ) : (
             <>
               <Link

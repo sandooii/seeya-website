@@ -348,8 +348,10 @@ export default async function MyTripDetailPage({
       })()}
 
       {/* Payment progress — hide for cancelled bookings (the cancellation
-          card above handles the money story). */}
-      {!isCancelled && (
+          card handles the money story) and for archived bookings
+          (payment is a closed chapter — showing 'مدفوع بالكامل' after
+          she's already traveled is noise, not information). */}
+      {!isCancelled && !isArchived && (
         <section className="bg-white rounded-3xl border border-ink/5 p-6">
           <div className="flex items-center justify-between gap-4 flex-wrap mb-3">
             <h2 className="text-lg font-black text-ink">حالة الدفع</h2>
@@ -397,36 +399,44 @@ export default async function MyTripDetailPage({
         </section>
       )}
 
-      {/* Archived thank-you card — celebrates the returned trip and
-          gives her a friendly path to book another. Renders once the
-          trip has ended and takes the place of the countdown-related
-          urgency messaging. */}
+      {/* Archived thank-you card — the entire archived-trip page. The
+          detail sections (payment, flights, itinerary, restaurants,
+          recommendations, PDF) are all hidden for returned trips
+          because none of them are "memories" — they're stale
+          planning docs. This card is the whole conversation:
+          gratitude, a compliment, and an invitation. */}
       {isArchived && (
-        <section className="rounded-3xl border-2 border-coral/25 bg-gradient-to-br from-coral/8 to-pale p-6 md:p-8">
-          <p className="text-2xl md:text-3xl font-black text-ink text-center">
-            رحلتك خلصت — بس الذكريات باقية 🌸
-          </p>
-          <p className="text-ink/70 text-sm md:text-base text-center mt-2 max-w-lg mx-auto leading-relaxed">
-            شكراً إنك اخترتي SeeYa. ذكريات{" "}
-            <strong className="text-ink">{trip.name}</strong> تحت لو حابة
-            تتذكري تفاصيلها. جاهزة لرحلتك الجاية؟
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
-            <Link
-              href="/#trips"
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-coral text-white font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_10px_30px_-10px_rgba(249,92,107,0.55)]"
-            >
-              ✨ احجزي رحلة تانية
-            </Link>
-            <a
-              href={waLink(waMessage)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white text-ink font-bold border border-ink/10 hover:bg-ink/5 active:scale-[0.98] transition-all"
-            >
-              <MessageCircle size={16} />
-              كلميني للاستفسار
-            </a>
+        <section className="rounded-3xl border-2 border-coral/25 bg-gradient-to-br from-coral/8 to-pale p-6 md:p-10">
+          <div className="max-w-lg mx-auto text-center">
+            <p className="text-5xl md:text-6xl mb-3" aria-hidden>
+              🌸
+            </p>
+            <p className="text-2xl md:text-3xl font-black text-ink leading-snug">
+              شكراً لسفرك معنا
+            </p>
+            <p className="text-ink/70 text-sm md:text-base mt-3 leading-relaxed">
+              نتمنى إن رحلة{" "}
+              <strong className="text-ink">{trip.name}</strong> كانت
+              زي ما تخيلتيها — وأكتر. الذكريات إلك، والوجهة الجاية
+              بتنطرك.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center mt-7">
+              <Link
+                href="/#trips"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-coral text-white font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_10px_30px_-10px_rgba(249,92,107,0.55)]"
+              >
+                ✨ احجزي رحلة تانية
+              </Link>
+              <a
+                href={waLink(waMessage)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-white text-ink font-bold border border-ink/10 hover:bg-ink/5 active:scale-[0.98] transition-all"
+              >
+                <MessageCircle size={16} />
+                كلميني للاستفسار
+              </a>
+            </div>
           </div>
         </section>
       )}
@@ -462,27 +472,21 @@ export default async function MyTripDetailPage({
         </section>
       )}
 
-      {/* Archived-only compact PDF row — keeps the souvenir accessible
-          without the "call us" urgency of the active-trip toolbar. */}
-      {isArchived && pdfUrl && (
-        <a
-          href={pdfUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-ink/5 text-ink/75 text-sm font-bold hover:bg-ink/10 transition-all self-start"
-        >
-          <Download size={14} />
-          حمّلي PDF الرحلة كذكرى
-        </a>
-      )}
+      {/* PDF for archived trips was intentionally removed. It's a
+          pre-trip planning document — showing it as a "souvenir"
+          after the trip feels stale rather than sentimental. If a
+          client wants her old PDF she can always WhatsApp us. */}
 
       {/* Companion content — every section below this comment is gated
           paid content (flights, hotel, packing, warnings, daily
-          itinerary, tips, restaurants, recommendations). Hidden
-          entirely for cancelled bookings so the cancellation flow
-          stays clean and the brand doesn't give away the value the
-          client cancelled out of. */}
-      {!isCancelled && (
+          itinerary, tips, restaurants, recommendations).
+          Hidden for cancelled bookings (paid content stays private
+          for someone who cancelled) AND for archived bookings (the
+          itinerary/tips/restaurants aren't "memories" — she LIVED
+          them; showing them post-trip is stale planning docs, not
+          nostalgia). The thank-you card above is the closure the
+          returned traveler needs. */}
+      {!isCancelled && !isArchived && (
         <>
       {/* Flights — merge the per-booking override on top of the trip
           default field-by-field, so a client who only had her *time*
