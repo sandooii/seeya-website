@@ -17,6 +17,11 @@ type Flight = {
 // values are hand-tuned for cinematic effect. When trip statuses change
 // in Supabase, update this list to match so the board doesn't lie.
 const flights: Flight[] = [
+  // Ordered as: upcoming (SEATS OPEN + SOON) first — those are what
+  // SANDO wants to sell — then completed trips (ARRIVED / DEPARTED)
+  // as social proof underneath. Two THAILAND rows on purpose: the
+  // 07.2026 flight already came back (SY-001, ARRIVED), the 08.2026
+  // one is the new sell (SY-005, SEATS OPEN).
   {
     destination: "THAILAND",
     flight: "SY-005",
@@ -25,18 +30,25 @@ const flights: Flight[] = [
     statusColor: "#f5ecd9",
   },
   {
-    destination: "BANSKO",
-    flight: "SY-002",
-    date: "01.2026",
-    status: "DEPARTED",
-    statusColor: "#9aa1a8",
-  },
-  {
     destination: "AMERICA",
     flight: "SY-004",
     date: "04.2027",
     status: "SOON",
     statusColor: "#f5ecd9",
+  },
+  {
+    destination: "THAILAND",
+    flight: "SY-001",
+    date: "07.2026",
+    status: "ARRIVED",
+    statusColor: "#9aa1a8",
+  },
+  {
+    destination: "BANSKO",
+    flight: "SY-002",
+    date: "01.2026",
+    status: "DEPARTED",
+    statusColor: "#9aa1a8",
   },
 ];
 
