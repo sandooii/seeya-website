@@ -87,10 +87,19 @@ export type UploadResult =
 /**
  * Upload a PDF for a trip. Overwrites any existing file at the same
  * key. Validates client-side that it's a PDF under the size cap.
+ *
+ * The caller must first obtain a signed upload token from the
+ * `createTripPdfUploadUrl` server action — a plain
+ * `storage.upload()` from the browser fails the bucket's RLS
+ * policies (they require `is_admin()`, and the browser client does
+ * not carry the admin session to the storage endpoint). The signed
+ * token authorises this one object without RLS, while the bytes
+ * still travel browser → storage directly, so large files don't hit
+ * the serverless request-body limit.
  */
 export async function uploadTripPdf(
-  tripId: string,
   file: File,
+  target: { path: string; token: string },
 ): Promise<UploadResult> {
   if (file.type !== "application/pdf") {
     return { ok: false, error: "نوع الملف لازم يكون PDF" };
@@ -103,33 +112,14 @@ export async function uploadTripPdf(
   }
 
   const supabase = browserClient();
-  const key = tripPdfKey(tripId);
 
   const { error } = await supabase.storage
     .from(TRIP_PDFS_BUCKET)
-    .upload(key, file, {
+    .uploadToSignedUrl(target.path, target.token, file, {
       contentType: "application/pdf",
       upsert: true,
-      cacheControl: "3600",
     });
 
   if (error) return { ok: false, error: error.message };
-  return { ok: true, path: key };
-}
-
-export type DeleteResult = { ok: true } | { ok: false; error: string };
-
-/**
- * Delete the PDF for a trip. Safe to call even if no file exists.
- */
-export async function deleteTripPdf(tripId: string): Promise<DeleteResult> {
-  const supabase = browserClient();
-  const key = tripPdfKey(tripId);
-
-  const { error } = await supabase.storage
-    .from(TRIP_PDFS_BUCKET)
-    .remove([key]);
-
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
+  return { ok: true, path: target.path };
 }

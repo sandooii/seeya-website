@@ -11,13 +11,12 @@ import {
   ExternalLink,
   RotateCcw,
 } from "lucide-react";
+import { uploadTripPdf, getTripPdfUrl, MAX_PDF_BYTES } from "@/lib/pdfs";
 import {
-  uploadTripPdf,
-  deleteTripPdf,
-  getTripPdfUrl,
-  MAX_PDF_BYTES,
-} from "@/lib/pdfs";
-import { setTripPdfPath } from "@/app/admin/(dash)/trips/actions";
+  setTripPdfPath,
+  createTripPdfUploadUrl,
+  removeTripPdf,
+} from "@/app/admin/(dash)/trips/actions";
 
 type Status = "idle" | "uploading" | "success" | "error";
 
@@ -51,7 +50,17 @@ export default function PdfUpload({
     setStatus("uploading");
     setMessage(null);
 
-    const result = await uploadTripPdf(tripId, file);
+    // Step 1 — ask the server for a signed upload token. This is where
+    // the admin check happens (the browser can't satisfy storage RLS).
+    const target = await createTripPdfUploadUrl(tripId);
+    if (!target.ok) {
+      setStatus("error");
+      setMessage(target.error);
+      return;
+    }
+
+    // Step 2 — send the bytes straight from the browser to storage.
+    const result = await uploadTripPdf(file, target);
 
     if (!result.ok) {
       setStatus("error");
@@ -78,17 +87,12 @@ export default function PdfUpload({
     setStatus("uploading");
     setMessage(null);
 
-    const result = await deleteTripPdf(tripId);
-    if (!result.ok) {
+    // Deleting runs entirely server-side (storage remove + clearing
+    // pdf_path) — same RLS reason the upload uses a signed token.
+    const result = await removeTripPdf(tripId);
+    if (result.error) {
       setStatus("error");
       setMessage(result.error);
-      return;
-    }
-
-    const updateResult = await setTripPdfPath(tripId, null);
-    if (updateResult.error) {
-      setStatus("error");
-      setMessage(`تم حذف الملف، لكن فشل تحديث الرحلة: ${updateResult.error}`);
       return;
     }
 

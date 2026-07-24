@@ -2,7 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  createServerSupabaseClient,
+  createServiceRoleClient,
+} from "@/lib/supabase/server";
+import { TRIP_PDFS_BUCKET, tripPdfKey } from "@/lib/pdfs";
 import type {
   CurrencyCode,
   TripStatusDB,
@@ -283,4 +287,101 @@ export async function setTripPdfPath(
   revalidatePath("/admin/pdfs");
   revalidatePath("/");
   return {};
+}
+
+// ─────────────────────────────────────────────────────────────
+// Trip PDF storage
+//
+// The browser CANNOT write to the trip-pdfs bucket directly: the
+// storage RLS policies require is_admin(), which reads auth.uid()
+// from the request JWT, and the browser-side Supabase client does
+// not reliably carry the admin session to the storage endpoint —
+// uploads came back "new row violates row-level security policy".
+//
+// Proxying the file through a server action isn't an option either:
+// program PDFs run to several MB and Vercel caps serverless request
+// bodies at 4.5 MB.
+//
+// So we use the signed-upload-URL pattern instead:
+//   1. Browser asks this server action for permission.
+//   2. Server verifies the caller is an admin using the cookie
+//      session (which DOES work server-side), then mints a
+//      short-lived signed upload URL with the service-role key.
+//   3. Browser PUTs the bytes straight to storage with that token.
+//      No RLS involved, no size ceiling, and the secret key never
+//      leaves the server.
+// ─────────────────────────────────────────────────────────────
+
+/** Throws-free admin check against the cookie session. */
+async function requireAdmin(): Promise<{ ok: boolean; error?: string }> {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { ok: false, error: "انتهت الجلسة — سجّلي دخول من جديد" };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.role !== "admin") {
+    return { ok: false, error: "ما عندك صلاحية لهذا الإجراء" };
+  }
+  return { ok: true };
+}
+
+export type SignedUploadTarget =
+  | { ok: true; path: string; token: string }
+  | { ok: false; error: string };
+
+/**
+ * Mint a signed upload URL for a trip's program PDF.
+ * The returned `token` lets the browser upload exactly this one
+ * object and nothing else.
+ */
+export async function createTripPdfUploadUrl(
+  tripId: string,
+): Promise<SignedUploadTarget> {
+  const guard = await requireAdmin();
+  if (!guard.ok) return { ok: false, error: guard.error! };
+
+  const key = tripPdfKey(tripId);
+  const admin = createServiceRoleClient();
+
+  const { data, error } = await admin.storage
+    .from(TRIP_PDFS_BUCKET)
+    .createSignedUploadUrl(key, { upsert: true });
+
+  if (error || !data) {
+    return { ok: false, error: error?.message ?? "تعذّر تجهيز رابط الرفع" };
+  }
+
+  return { ok: true, path: data.path, token: data.token };
+}
+
+/**
+ * Delete a trip's program PDF from storage and clear `pdf_path`.
+ * Runs entirely server-side for the same reason uploads use a
+ * signed URL — the browser can't satisfy the storage RLS policies.
+ */
+export async function removeTripPdf(
+  tripId: string,
+): Promise<{ error?: string }> {
+  const guard = await requireAdmin();
+  if (!guard.ok) return { error: guard.error };
+
+  const admin = createServiceRoleClient();
+  const { error: storageError } = await admin.storage
+    .from(TRIP_PDFS_BUCKET)
+    .remove([tripPdfKey(tripId)]);
+
+  // A missing object is not a failure — we still want pdf_path cleared.
+  if (storageError && !/not found/i.test(storageError.message)) {
+    return { error: storageError.message };
+  }
+
+  return setTripPdfPath(tripId, null);
 }
